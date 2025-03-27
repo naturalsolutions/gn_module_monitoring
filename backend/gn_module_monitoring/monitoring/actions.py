@@ -21,6 +21,7 @@ from geonature.core.imports.utils import (
     get_mapping_data,
     load_transient_data_in_dataframe,
     update_transient_data_from_dataframe,
+    compute_bounding_box
 )
 
 from geonature.utils.env import db
@@ -426,8 +427,13 @@ class MonitoringImportActions(ImportActions):
         return None
 
     @staticmethod
-    def compute_bounding_box(imprt: TImports) -> None:
-        pass
+    def compute_bounding_box(imprt: TImports):
+        return compute_bounding_box(
+            imprt=imprt,
+            geom_entity_code="site",
+            geom_4326_field_name="s__geom",
+        )
+
 
     # Following methods not present in ImportActions
 
