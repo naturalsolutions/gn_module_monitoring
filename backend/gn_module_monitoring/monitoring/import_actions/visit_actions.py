@@ -160,3 +160,11 @@ class VisitImportActions:
                 entity_visit_fields,
                 entity_visit_fields.get(VisitImportActions.UUID_FIELD),
             )
+
+    @staticmethod
+    def check_existing_site_permissions(imprt: TImports) -> None:
+        pass
+
+    @staticmethod
+    def check_creation_permissions(imprt: TImports) -> None:
+        pass

@@ -138,6 +138,13 @@ class MonitoringImportActions(ImportActions):
         VisitImportActions.check_sql(imprt)
         ObservationImportActions.check_sql(imprt)
 
+        # Check des permissions
+
+        # Besoin. lire les permissions dans l'objet adapté
+        SiteImportActions.check_creation_permissions(imprt)  # C dans site
+        VisitImportActions.check_creation_permissions(imprt)  # C dans visit
+        ObservationImportActions.check_creation_permissions(imprt)  # pas yolo. C dans visit.
+
     @staticmethod
     def import_data_to_destination(imprt: TImports) -> None:
         transient_table = imprt.destination.get_transient_table()

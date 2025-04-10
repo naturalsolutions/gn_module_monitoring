@@ -153,3 +153,7 @@ class SiteImportActions:
             ),
             child_entity_code=ObservationImportActions.ENTITY_CODE,
         )
+
+    @staticmethod
+    def check_creation_permissions(imprt: TImports) -> None:
+        pass

@@ -151,3 +151,11 @@ class ObservationImportActions:
                 )
             ),
         }
+
+    @staticmethod
+    def check_existing_visit_permissions(imprt: TImports) -> None:
+        pass
+
+    @staticmethod
+    def check_creation_permissions(imprt: TImports) -> None:
+        pass
