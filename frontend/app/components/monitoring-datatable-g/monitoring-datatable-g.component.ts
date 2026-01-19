@@ -310,8 +310,9 @@ export class MonitoringDatatableGComponent implements OnInit {
   }
 
   private clearFilters() {
-    this.filters = {};
+    this.filters = this.dataTableConfig[0].config.filters;
     this.initSort();
+    this.filter();
   }
 
   private updateDataTable(objChanges: SimpleChange) {
