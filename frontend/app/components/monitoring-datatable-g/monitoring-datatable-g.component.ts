@@ -132,7 +132,6 @@ export class MonitoringDatatableGComponent implements OnInit {
     //   this.objectType = newObjType;
     // });
     // Initialisation des filtres
-    this.clearFilters();
     this.filterSubject.pipe(debounceTime(500)).subscribe(() => {
       this.filter();
     });
