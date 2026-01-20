@@ -309,7 +309,7 @@ export class MonitoringDatatableGComponent implements OnInit {
   }
 
   private clearFilters() {
-    this.filters = this.dataTableConfig[0].config.filters;
+    this.filters = this.dataTableConfig[this.activetabIndex].config.filters;
     this.initSort();
     this.filter();
   }
