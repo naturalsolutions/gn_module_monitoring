@@ -9,6 +9,7 @@ from geonature.utils.env import MA
 from geonature.core.gn_commons.schemas import MediaSchema, ModuleSchema
 from geonature.core.gn_monitoring.models import BibTypeSite
 from geonature.core.gn_meta.schemas import DatasetSchema
+from geonature.core.gn_monitoring.models import TBaseSites
 
 from pypnusershub.db.models import User
 
@@ -62,6 +63,8 @@ def add_specific_attributes(schema, object_type, module_code):
     parameters = {"model": model_class, "exclude": ["data"], "include_fk": True}
     if issubclass(monitoring_object_class, MonitoringObjectGeom):
         parameters["exclude"].extend(["geom_geojson", "geom"])
+    if issubclass(model_class, TBaseSites):
+        parameters["exclude"].extend(["geom_local"])
     Meta = type("Meta", (), parameters)
 
     attrs.update({"Meta": Meta})
@@ -170,7 +173,7 @@ class BibTypeSiteSchema(MA.SQLAlchemyAutoSchema):
 class MonitoringSitesSchema(MA.SQLAlchemyAutoSchema):
     class Meta:
         model = TMonitoringSites
-        exclude = ("geom_geojson", "geom")
+        exclude = ("geom_geojson", "geom", "geom_local")
         include_fk = True
         load_relationships = True
 
