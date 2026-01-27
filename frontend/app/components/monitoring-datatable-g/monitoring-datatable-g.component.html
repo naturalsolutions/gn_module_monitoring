@@ -167,7 +167,7 @@
                   <ng-template #chooseProtocolPopup>
                     <option-list-btn
                       placeholder="Sélectionner le protocole"
-                      label="{{ 'Monitoring.Sites.addVisit' | translate }}"
+                      label="{{ row.active ? 'Monitoring.Sites.addVisit'  : 'Monitoring.Sites.inactiveSite' | translate }}"
                       [iconOrButton]="icon"
                       [canCreateChild]="canCreateChild && row.active"
                       [item]="row"
