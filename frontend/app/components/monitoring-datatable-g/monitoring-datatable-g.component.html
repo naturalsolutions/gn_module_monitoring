@@ -169,7 +169,7 @@
                       placeholder="Sélectionner le protocole"
                       label="{{ 'Monitoring.Sites.addVisit' | translate }}"
                       [iconOrButton]="icon"
-                      [canCreateChild]="canCreateChild"
+                      [canCreateChild]="canCreateChild && row.active"
                       [item]="row"
                       (onDeployed)="addChildrenVisit(row)"
                       (onSaved)="saveOptionChild($event)"
