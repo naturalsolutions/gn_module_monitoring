@@ -209,6 +209,8 @@ class MonitoringVisitsSchema(MA.SQLAlchemyAutoSchema):
     pk = fields.Method("set_pk", dump_only=True)
     module = MA.Nested(ModuleSchema)
     medias = MA.Nested(MediaSchema, many=True)
+    visit_date_min = MA.Date()
+    visit_date_max = MA.Date()
 
     observers = MA.Pluck(ObserverSchema, "id_role", many=True)
 
