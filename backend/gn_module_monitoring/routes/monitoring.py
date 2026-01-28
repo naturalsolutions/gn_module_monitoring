@@ -240,13 +240,17 @@ def create_object_api(module_code, object_type, id):
     post_data = dict(request.get_json())
 
     # prevent visit creation if site is inactive
-    if object_type == 'visit':
-        id_base_site = post_data['properties']['id_base_site']
+    if object_type == "visit":
+        id_base_site = post_data["properties"]["id_base_site"]
         query = select(TBaseSites.active).where(TBaseSites.id_base_site == id_base_site)
         is_active = DB.session.scalar(query)
 
         if not is_active:
-            raise GeoNatureError("MONITORING: create_object_api {} : site n°{} is inactive".format(object_type, str(id_base_site)))
+            raise GeoNatureError(
+                "MONITORING: create_object_api {} : site n°{} is inactive".format(
+                    object_type, str(id_base_site)
+                )
+            )
 
     # get_config(module_code, force=True)
     return create_or_update_object_api(module_code, object_type, id)
