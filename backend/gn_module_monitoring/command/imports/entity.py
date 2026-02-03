@@ -1,25 +1,15 @@
+import re
+
+import sqlalchemy as sa
+from geonature.core.gn_permissions.models import PermObject
+from geonature.core.imports.models import BibFields, Entity, EntityField
+from geonature.utils.env import DB
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
-import sqlalchemy as sa
 
-
-from geonature.utils.env import DB
-from geonature.core.gn_permissions.models import (
-    PermObject,
-)
-from geonature.core.imports.models import (
-    BibFields,
-    Entity,
-    EntityField,
-)
-
-
-from gn_module_monitoring.config.utils import (
-    json_from_file,
-    monitoring_module_config_path,
-)
 from gn_module_monitoring.command.imports.constant import TABLE_NAME_SUBMODULE, UUID_FIELD_NAME
 from gn_module_monitoring.command.imports.fields import get_themes_dict
+from gn_module_monitoring.config.utils import json_from_file, monitoring_module_config_path
 from gn_module_monitoring.utils.utils import extract_keys
 
 
@@ -186,9 +176,17 @@ def insert_entity_field_relations(protocol_data, id_destination, entity_hierarch
 
     for entity_code, fields in protocol_data.items():
         entity_id = entity_ids.get(entity_code)
-        order = 1
+        display_properties = protocol_data[entity_code].get("display_properties", [])
+        # raise Exception("stop")
+        max_order = len(display_properties) + 1
         for field_type in ["generic", "specific"]:
             for field in fields[field_type]:
+                field_name = re.sub(r"^[a-z]__", "", field["name_field"])
+                order = (
+                    display_properties.index(field_name) + 1
+                    if field_name in display_properties
+                    else max_order
+                )
                 if get_cor_entity_field(
                     entity_id=entity_id,
                     field_name=field["name_field"],
@@ -196,7 +194,7 @@ def insert_entity_field_relations(protocol_data, id_destination, entity_hierarch
                     bib_themes=bib_themes,
                     order=order,
                 ):
-                    order += 1
+                    max_order += 1
 
         parent_code = entity_hierarchy_map[entity_code]["parent_entity"]
         if parent_code:

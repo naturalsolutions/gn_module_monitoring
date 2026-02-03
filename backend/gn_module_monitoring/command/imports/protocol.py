@@ -108,8 +108,12 @@ def get_protocol_data(module_code: str, id_destination: int):
         generic_data = entity_conf.get("generic_data")
         specific_data = entity_conf.get("specific_data")
         geom_field_name = specific_data.get("geom_field_name", generic_data.get("geom_field_name"))
+        protocol_data[entity_code]["display_properties"] = config_module[entity_code].get(
+            "display_properties", []
+        )
         if geom_field_name is not None:
             name_field = get_field_name(entity_code, geom_field_name)
+
             protocol_data[entity_code]["generic"].extend(
                 [
                     {
