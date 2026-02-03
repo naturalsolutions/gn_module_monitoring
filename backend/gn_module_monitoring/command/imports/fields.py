@@ -34,6 +34,7 @@ def prepare_fields(specific_data, generic_data, entity_code, id_destination, par
         "last_visit",  # dynamic
         "nb_visits",  # dynamic
         "nb_observations",  # dynamic
+        "nb_individuals",  # dynamic
         "medias",  # not importable
     ]
 
