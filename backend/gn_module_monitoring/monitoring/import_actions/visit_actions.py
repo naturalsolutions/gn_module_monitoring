@@ -6,8 +6,10 @@ from geonature.core.imports.checks.sql.extra import (
     disable_duplicated_rows,
     generate_entity_id,
     generate_missing_uuid,
+    generate_missing_uuid_for_id_origin,
     set_parent_id_from_line_no,
 )
+from geonature.core.imports.checks.sql.core import update_rows_validity
 
 from geonature.core.imports.checks.sql import (
     check_dates,
@@ -33,6 +35,7 @@ class VisitImportActions:
     ENTITY_CODE = "visit"
     TABLE_NAME = "t_base_visits"
     ID_FIELD = "id_base_visit"
+    ID_ORIGIN_FIELD = "id_base_visit_origin"
     LINE_NO = "visit_line_no"
     UUID_FIELD = "uuid_base_visit"
     DATE_MIN_FIELD = "v__visit_date_min"
@@ -75,6 +78,12 @@ class VisitImportActions:
                 imprt, entity, fieldmapped_fields.get(VisitImportActions.UUID_FIELD)
             )
 
+        if VisitImportActions.ID_ORIGIN_FIELD in fieldmapped_fields:
+            generate_missing_uuid_for_id_origin(
+                imprt,
+                entity_fields.get(VisitImportActions.UUID_FIELD),
+                entity_fields.get(VisitImportActions.ID_ORIGIN_FIELD),
+            )
         generate_missing_uuid(
             imprt,
             entity,
@@ -83,17 +92,6 @@ class VisitImportActions:
         )
 
         do_nomenclatures_mapping(imprt, entity, fieldmapped_fields, fill_with_defaults=False)
-
-        # Wire parent child
-        set_parent_line_no(
-            imprt,
-            parent_entity=entity.parent,
-            entity=entity,
-            parent_line_no=SiteImportActions.LINE_NO,
-            fields=[
-                entity_fields.get(SiteImportActions.UUID_FIELD),
-            ],
-        )
 
         ## process parent uuid and id
         set_id_parent_from_destination(
@@ -105,6 +103,20 @@ class VisitImportActions:
                 entity_fields.get(SiteImportActions.UUID_FIELD),
             ],
         )
+
+        # Wire parent child
+        set_parent_line_no(
+            imprt,
+            parent_entity=entity.parent,
+            entity=entity,
+            parent_line_no=SiteImportActions.LINE_NO,
+            fields=[
+                entity_fields.get(SiteImportActions.ID_ORIGIN_FIELD),
+                entity_fields.get(SiteImportActions.UUID_FIELD),
+            ],
+        )
+
+        update_rows_validity(imprt, entity)
 
         VisitImportActions.check_dates(imprt)
 

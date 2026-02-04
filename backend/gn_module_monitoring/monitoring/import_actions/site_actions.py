@@ -16,6 +16,7 @@ from geonature.core.imports.checks.sql import (
     check_existing_uuid,
     convert_geom_columns,
     do_nomenclatures_mapping,
+    generate_missing_uuid_for_id_origin,
 )
 from geonature.core.imports.utils import (
     get_mapping_data,
@@ -23,6 +24,7 @@ from geonature.core.imports.utils import (
     update_transient_data_from_dataframe,
     compute_bounding_box,
 )
+from geonature.core.imports.checks.sql.core import update_rows_validity
 
 from geonature.core.imports.checks.dataframe.geometry import check_geometry
 
@@ -33,6 +35,7 @@ class SiteImportActions:
     ENTITY_CODE = "site"
     TABLE_NAME = "t_base_sites"
     ID_FIELD = "id_base_site"
+    ID_ORIGIN_FIELD = "id_base_site_origin"
     LINE_NO = "site_line_no"
     UUID_FIELD = "uuid_base_site"
     GEOMETRY_FIELD = "s__geom"
@@ -72,12 +75,20 @@ class SiteImportActions:
                 imprt, entity, fieldmapped_fields.get(SiteImportActions.UUID_FIELD)
             )
 
+        if SiteImportActions.ID_ORIGIN_FIELD in fieldmapped_fields:
+            generate_missing_uuid_for_id_origin(
+                imprt,
+                entity_fields.get(SiteImportActions.UUID_FIELD),
+                entity_fields.get(SiteImportActions.ID_ORIGIN_FIELD),
+            )
         generate_missing_uuid(
             imprt,
             entity,
             entity_fields.get(SiteImportActions.UUID_FIELD),
             whereclause=None,
         )
+
+        update_rows_validity(imprt, entity)
 
         SiteImportActions.check_and_compute_geometries(imprt)
 
