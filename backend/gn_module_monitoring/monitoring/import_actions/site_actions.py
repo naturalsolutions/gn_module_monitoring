@@ -24,7 +24,6 @@ from geonature.core.imports.utils import (
     update_transient_data_from_dataframe,
     compute_bounding_box,
 )
-from geonature.core.imports.checks.sql.core import update_rows_validity
 
 from geonature.core.imports.checks.dataframe.geometry import check_geometry
 
@@ -88,7 +87,13 @@ class SiteImportActions:
             whereclause=None,
         )
 
-        update_rows_validity(imprt, entity)
+        if SiteImportActions.ID_ORIGIN_FIELD in fieldmapped_fields:
+            disable_duplicated_rows(
+                imprt,
+                entity,
+                fieldmapped_fields,
+                entity_fields.get(SiteImportActions.ID_ORIGIN_FIELD),
+            )
 
         SiteImportActions.check_and_compute_geometries(imprt)
 

@@ -9,7 +9,6 @@ from geonature.core.imports.checks.sql.extra import (
     generate_missing_uuid_for_id_origin,
     set_parent_id_from_line_no,
 )
-from geonature.core.imports.checks.sql.core import update_rows_validity
 
 from geonature.core.imports.checks.sql import (
     check_dates,
@@ -29,6 +28,7 @@ from geonature.core.imports.utils import (
 from geonature.core.imports.models import Entity, TImports
 
 from geonature.core.imports.checks.dataframe.core import check_datasets, check_required_values
+from geonature.utils.env import db
 
 
 class VisitImportActions:
@@ -84,6 +84,12 @@ class VisitImportActions:
                 entity_fields.get(VisitImportActions.UUID_FIELD),
                 entity_fields.get(VisitImportActions.ID_ORIGIN_FIELD),
             )
+            disable_duplicated_rows(
+                imprt,
+                entity,
+                fieldmapped_fields,
+                entity_fields.get(VisitImportActions.ID_ORIGIN_FIELD),
+            )
         generate_missing_uuid(
             imprt,
             entity,
@@ -116,7 +122,7 @@ class VisitImportActions:
             ],
         )
 
-        update_rows_validity(imprt, entity)
+        # update_rows_validity(imprt, entity)
 
         VisitImportActions.check_dates(imprt)
 
@@ -182,8 +188,19 @@ class VisitImportActions:
         from gn_module_monitoring.monitoring.import_actions.site_actions import (
             SiteImportActions,
         )
+        import sqlalchemy as sa
 
+        transient_table = imprt.destination.get_transient_table()
         entity = EntityImportActionsUtils.get_entity(imprt, VisitImportActions.ENTITY_CODE)
+        print(
+            db.session.execute(
+                sa.select(
+                    transient_table.c.site_line_no,
+                    transient_table.c.visit_line_no,
+                    transient_table.c.id_base_visit,
+                ).where(transient_table.c.id_import == imprt.id_import)
+            )
+        )
         set_parent_id_from_line_no(
             imprt,
             entity=entity,
