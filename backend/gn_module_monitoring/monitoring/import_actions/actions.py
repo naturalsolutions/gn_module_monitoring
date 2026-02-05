@@ -194,7 +194,6 @@ class MonitoringImportActions(ImportActions):
                 )
                 for field in core_fields
             )
-
             if entity.code == "visit":
                 core_select_cols.append(sa.literal(imprt.destination.id_module).label("id_module"))
                 core_dest_col_names.append("id_module")
@@ -204,7 +203,6 @@ class MonitoringImportActions(ImportActions):
                         transient_table.c.src_v__observers.label("observers_txt")
                     )
                     core_dest_col_names.append("observers_txt")
-
             core_select_stmt = (
                 sa.select(*core_select_cols)
                 .where(transient_table.c.id_import == imprt.id_import)
