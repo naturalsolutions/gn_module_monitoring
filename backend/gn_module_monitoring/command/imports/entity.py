@@ -7,7 +7,11 @@ from geonature.utils.env import DB
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-from gn_module_monitoring.command.imports.constant import TABLE_NAME_SUBMODULE, UUID_FIELD_NAME
+from gn_module_monitoring.command.imports.constant import (
+    TABLE_NAME_SUBMODULE,
+    TOOLTIPS,
+    UUID_FIELD_NAME,
+)
 from gn_module_monitoring.command.imports.fields import get_themes_dict
 from gn_module_monitoring.config.utils import json_from_file, monitoring_module_config_path
 from gn_module_monitoring.utils.utils import extract_keys
@@ -212,6 +216,13 @@ def insert_entity_field_relations(protocol_data, id_destination, entity_hierarch
                 bib_themes=bib_themes,
                 is_parent_link=True,
             )
+            get_cor_entity_field(
+                entity_id=entity_id,
+                field_name=f"id_base_{parent_code}_origin",
+                id_destination=id_destination,
+                bib_themes=bib_themes,
+                is_parent_link=True,
+            )
 
 
 def get_cor_entity_field(
@@ -238,7 +249,7 @@ def get_cor_entity_field(
         "id_theme": bib_themes["general_info"],
         "order_field": 0 if is_parent_link else (order or 1),
         "desc_field": "",
-        "comment": None,
+        "comment": TOOLTIPS.get(field_name, None),
     }
 
     stmt = (
