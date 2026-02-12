@@ -189,7 +189,7 @@ def get_protocol_data(module_code: str, id_destination: int):
             [
                 {
                     "name_field": f"id_{suffix}_origin",
-                    "fr_label": f"ID source {name.capitalize()}",
+                    "fr_label": f"Identifiant {name} d'origine",
                     "type_field": "text",
                     "type_column": "string",
                     "mandatory": False,
