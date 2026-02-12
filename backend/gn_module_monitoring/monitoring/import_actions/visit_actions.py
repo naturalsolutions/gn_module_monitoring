@@ -122,8 +122,6 @@ class VisitImportActions:
             ],
         )
 
-        # update_rows_validity(imprt, entity)
-
         VisitImportActions.check_dates(imprt)
 
         VisitImportActions.check_parent_validity(imprt)

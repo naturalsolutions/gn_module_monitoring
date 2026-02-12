@@ -1,3 +1,4 @@
+from gn_module_monitoring.monitoring.import_actions.visit_actions import VisitImportActions
 from .entity_import_actions_utils import EntityImportActionsUtils
 from geonature.core.imports.checks.sql.parent import set_parent_line_no
 
@@ -90,6 +91,7 @@ class ObservationImportActions:
                 parent_line_no=ObservationImportActions.PARENT_LINE_NO,
                 fields=[
                     fieldmapped_fields.get(ObservationImportActions.PARENT_UUID_FIELD),
+                    fieldmapped_fields.get(VisitImportActions.ID_ORIGIN_FIELD),
                 ],
             )
 
