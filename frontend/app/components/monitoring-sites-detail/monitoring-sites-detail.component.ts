@@ -153,17 +153,22 @@ export class MonitoringSitesDetailComponent extends MonitoringGeomComponent impl
       .subscribe((data) => {
         this.objParent = data.objObsSite;
         this.obj.initTemplate();
-        if (this.moduleCode !== 'generic') {
-          this._formService.changeFormMapObj({
-            frmGp: null,
-            obj: this.obj,
-          });
-        }
         this.site = data.site;
 
         if (this.parentsPath.includes('sites_group')) {
           this.siteGroupIdParent = data.site.id_sites_group;
         }
+        // if (this.siteGroupIdParent) {
+        //   // Quand il y a un group de site défini affichage du groupes de sites
+        //   //  et autre sites associés pour avoir des repères
+        //   this.geojsonService.getSitesGroupsGeometriesWithSites(
+        //     this.onEachFeatureSite(),
+        //     this.onEachFeatureSite(),
+        //     { id_sites_group: this.siteGroupIdParent },
+        //     { id_sites_group: this.siteGroupIdParent },
+        //     true
+        //   );
+        // }
 
         // ajout des propriétés spécifiques au type de site
         // dans l'objet MonitoringObject
@@ -192,12 +197,10 @@ export class MonitoringSitesDetailComponent extends MonitoringGeomComponent impl
 
         if (this.checkEditParam) {
           // Si mode édition demandé via le paramètre d'URL "edit"
-          this._formService.changeDataSub(
-            this.site,
-            this.siteService.objectObs.objectType,
-            this.siteService.objectObs.endPoint,
-            this.moduleCode
-          );
+          this._formService.changeFormMapObj({
+            frmGp: this.form,
+            obj: this.obj,
+          });
 
           this.bEdit = true;
           this._formService.changeCurrentEditMode(this.bEdit);
@@ -229,10 +232,14 @@ export class MonitoringSitesDetailComponent extends MonitoringGeomComponent impl
   }
 
   seeDetails($event) {
+    const parentsPath = [...this.parentsPath];
+    if (!parentsPath.includes('site')) {
+      parentsPath.push('site');
+    }
     this.router.navigate(
       [`/monitorings/object/${$event.module.module_code}/visit/${$event.id_base_visit}`],
       {
-        queryParams: { parents_path: ['module', 'site'] },
+        queryParams: { parents_path: parentsPath },
       }
     );
   }
@@ -263,8 +270,10 @@ export class MonitoringSitesDetailComponent extends MonitoringGeomComponent impl
   }
 
   editChild($event) {
-    const parentsPath = this.parentsPath;
-    parentsPath.push('site');
+    const parentsPath = [...this.parentsPath];
+    if (!parentsPath.includes('site')) {
+      parentsPath.push('site');
+    }
     this.router.navigate(
       [
         `monitorings/object/${$event.module.module_code}/visit/${$event.id_base_visit}`,
@@ -287,10 +296,21 @@ export class MonitoringSitesDetailComponent extends MonitoringGeomComponent impl
   }
 
   onbEditChange(event) {
-    this._formService.changeFormMapObj({
-      frmGp: this.form,
-      obj: this.obj,
-    });
+    if (this.bEdit == true && event == false) {
+      // Passage du mode édition au mode consultation : on suppose que des modifications de géométries
+      //  ont pu être faites
+      // Récupération et affichage de la géométrie du site
+      this.geojsonService.getSitesGroupsChildGeometries(this.onEachFeatureSite(), {
+        id_base_site: this.site.id_base_site,
+      });
+    }
+    this.bEdit = event;
+    if (this.bEdit) {
+      this._formService.changeFormMapObj({
+        frmGp: this.form,
+        obj: this.obj,
+      });
+    }
     this._formService.changeCurrentEditMode(this.bEdit);
   }
 

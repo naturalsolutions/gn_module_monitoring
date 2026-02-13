@@ -91,15 +91,13 @@ class MonitoringObject(MonitoringObjectSerializer):
 
         # Test de l'existance de la colonne de synchronisation sur la vue synthese
         column_exist = DB.engine.execute(
-            text(
-                """
+            text("""
                 SELECT count(*)
                 FROM information_schema.columns
                 WHERE   table_schema=:table_schema
                     AND table_name=:table_name
                     AND column_name=:column_name;
-                """
-            ),
+                """),
             table_schema="gn_monitoring",
             table_name=table_name,
             column_name=self.config_param("id_field_name"),
@@ -169,12 +167,17 @@ class MonitoringObject(MonitoringObjectSerializer):
     def breadcrumb(self, params):
         if not self._id:
             return
+        # Si le module code est monitorings on le transforme
+        #   en generic pour le front
+        module_code = self._module_code
+        if self._module_code.upper() == "MONITORINGS":
+            module_code = "generic"
 
         breadcrumb = {
             "id": self._id,
             "label": self.config_param("label"),
             "description": str(self.config_value("description_field_name")),
-            "module_code": self._module_code,
+            "module_code": module_code,
             "object_type": self._object_type,
         }
 

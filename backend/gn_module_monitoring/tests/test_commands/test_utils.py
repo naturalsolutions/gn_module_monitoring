@@ -1,8 +1,6 @@
 import pytest
 
 from pathlib import Path
-
-from gn_module_monitoring.tests.fixtures.generic import *
 from gn_module_monitoring.command.imports.constant import FORBIDDEN_SQL_INSTRUCTION
 from gn_module_monitoring.command.sql import execute_sql_file
 

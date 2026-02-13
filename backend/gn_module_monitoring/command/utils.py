@@ -46,12 +46,187 @@ from gn_module_monitoring.config.utils import (
 from gn_module_monitoring.utils.utils import extract_keys
 from gn_module_monitoring.modules.repositories import get_module, get_source_by_code, get_modules
 
-
 """
 utils.py
 
 fonctions pour les commandes du module monitoring
 """
+
+
+FORBIDDEN_SQL_INSTRUCTION = [
+    "INSERT ",
+    "DELETE ",
+    "UPDATE ",
+    "EXECUTE ",
+    "TRUNCATE ",
+    "ALTER ",
+    "GRANT ",
+    "COPY ",
+    "PERFORM ",
+    "CASCADE",
+]
+
+PERMISSION_LABEL = {
+    "MONITORINGS_MODULES": {"label": "modules", "actions": ["R", "U", "E"]},
+    "MONITORINGS_GRP_SITES": {"label": "groupes de sites", "actions": ["C", "R", "U", "D"]},
+    "MONITORINGS_SITES": {"label": "sites", "actions": ["C", "R", "U", "D"]},
+    "MONITORINGS_VISITES": {"label": "visites", "actions": ["C", "R", "U", "D"]},
+    "MONITORINGS_INDIVIDUALS": {"label": "individus", "actions": ["C", "R", "U", "D"]},
+    "MONITORINGS_MARKINGS": {"label": "marquages", "actions": ["C", "R", "U", "D"]},
+}
+
+ACTION_LABEL = {
+    "C": "Créer des",
+    "R": "Voir les",
+    "U": "Modifier les",
+    "D": "Supprimer des",
+    "E": "Exporter les",
+}
+
+
+def process_sql_files(
+    dir=None, module_code=None, depth=1, allowed_files=["export.sql", "synthese.sql"]
+):
+    sql_dir = Path(monitoring_module_config_path(module_code))
+    if dir:
+        sql_dir = sql_dir / "exports/csv"
+    if not sql_dir.is_dir():
+        return
+
+    if not allowed_files:
+        allowed_files = []
+    count_depth = 0
+    for root, dirs, files in os.walk(sql_dir, followlinks=True):
+        count_depth = count_depth + 1
+        for f in files:
+            if not f.endswith(".sql"):
+                continue
+            if not f in allowed_files and allowed_files:
+                continue
+            # Vérification commandes non autorisée
+            try:
+                execute_sql_file(root, f, module_code, FORBIDDEN_SQL_INSTRUCTION)
+                print("{} - exécution du fichier : {}".format(module_code, f))
+            except Exception as e:
+                print(e)
+
+        # Limite profondeur de la recherche dans les répertoires
+        if depth:
+            if count_depth >= depth:
+                break
+
+
+def execute_sql_file(dir, file, module_code, forbidden_instruction=[]):
+    """
+    Execution d'un fichier sql dans la base de donnée
+    dir : nom du répertoire
+    file : nom du fichier à éxécuter
+    module_code : code du module
+    forbidden_instruction : liste d'instructions sql qui sont proscrites du fichier.
+
+    """
+    sql_content = Path(Path(dir) / file).read_text()
+    sql_content = sql_content.replace(
+        "v_synthese_:module_code", f"v_synthese_{module_code}"
+    )  # On remplace explicitement le module_code dans le sql_content
+    for sql_cmd in forbidden_instruction:
+        if sql_cmd.lower() in sql_content.lower():
+            raise Exception(
+                "erreur dans le script {} instruction sql non autorisée {}".format(
+                    module_code, file, sql_cmd
+                )
+            )
+
+    try:
+        with DB.engine.begin() as conn:
+            conn.execute(
+                text(sql_content),
+                module_code=module_code,
+            )
+    except Exception as e:
+        raise Exception("{} - erreur dans le script {} : {}".format(module_code, file, e))
+
+
+def process_available_permissions(module_code, session):
+    try:
+        module = get_module("module_code", module_code)
+    except Exception:
+        print("le module n'existe pas")
+        return
+
+    config = get_config(module_code, force=True)
+    if not config:
+        print(f"Il y a un problème de configuration pour le module {module_code}")
+        return
+
+    tree = config.get("tree", [])
+
+    module_objects = [k for k in extract_keys(tree, keys=[])]
+
+    permission_level = current_app.config["MONITORINGS"].get("PERMISSION_LEVEL", {})
+
+    # Insert permission object
+    for permission_object_code in module_objects:
+        print(f"Création des permissions pour {module_code} : {permission_object_code}")
+        insert_module_available_permissions(
+            module_code, permission_level[permission_object_code], session=session
+        )
+
+
+def insert_module_available_permissions(module_code, perm_object_code, session):
+    object_label = PERMISSION_LABEL.get(perm_object_code)["label"]
+
+    if not object_label:
+        print(f"L'object {perm_object_code} n'est pas traité")
+
+    try:
+        module = session.scalars(select(TModules).where(TModules.module_code == module_code)).one()
+    except NoResultFound:
+        print(f"Le module {module_code} n'est pas présent")
+        return
+
+    try:
+        perm_object = session.execute(
+            select(PermObject).where(PermObject.code_object == perm_object_code)
+        ).scalar_one_or_none()
+    except NoResultFound:
+        print(f"L'object de permission {perm_object_code} n'est pas présent")
+        return
+
+    stmt = (
+        pg_insert(cor_object_module)
+        .values(id_module=module.id_module, id_object=perm_object.id_object)
+        .on_conflict_do_nothing()
+    )
+    session.execute(stmt)
+    session.commit()
+
+    # Création d'une permission disponible pour chaque action
+    object_actions = PERMISSION_LABEL.get(perm_object_code)["actions"]
+    for action in object_actions:
+        permaction = session.execute(
+            select(PermAction).where(PermAction.code_action == action)
+        ).scalar_one()
+        try:
+            perm = session.execute(
+                select(PermissionAvailable).where(
+                    PermissionAvailable.module == module,
+                    PermissionAvailable.object == perm_object,
+                    PermissionAvailable.action == permaction,
+                )
+            ).scalar_one()
+        except NoResultFound:
+            label = f"{ACTION_LABEL[action]} {object_label}"
+            if action == "E" and perm_object.code_object == "MONITORINGS_MODULES":
+                label = "Export les données du module"
+            perm = PermissionAvailable(
+                module=module,
+                object=perm_object,
+                action=permaction,
+                label=label,
+                scope_filter=True,
+            )
+            session.add(perm)
 
 
 def remove_monitoring_module(module_code):

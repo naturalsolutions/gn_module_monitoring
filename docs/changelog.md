@@ -1,5 +1,60 @@
 # CHANGELOG
 
+## 1.2.6 (30-01-2026)
+
+**🚀 Nouveautés**
+
+- Affichage cartographique des autres objets lors de l'édition d'un site ou d'un groupe de site (activables/désactivables via le gestionnaire de couches de Leaflet) (#565 par @amandine-sahl) :
+  - site : affichage des sites du sous-module
+  - groupe de sites : affichage des groupes de sites du sous-module
+  - site associé à un groupe de sites : affichage du groupe de sites et des sites associés
+
+**🐛 Corrections**
+
+- Correction du remplissage automatique du champs "observateurs" (mis en place dans la 1.2.5) pour ne pas l'appliquer, dans le cas où celui-ci est masqué pour renseigner les observateurs des visites en texte uniquement (#567 par @amandine-sahl) 
+- Correction d'une régression de la 1.2.5 lors de la modification des observateurs d'une visite (#568 par @amandine-sahl)
+- Correction du texte de traduction dans la modale de suppression (#570 par @amandine-sahl)
+
+## 1.2.5 (28-01-2026)
+ 
+**🚀 Nouveautés**
+
+- Amélioration de la vue SQL d'exemple alimentant la Synthèse depuis un sous-module Monitoring (`data/synthese_svo.sql`), en renseignant le champs "Nom lieu" de la Synthèse (`place_name`) avec le nom du site (`base_site_name`) (#549 par @maximetoma)
+- Remplissage automatique des formulaires par des valeurs par défaut (#553 par @amandine-sahl)
+  - Site : date création (aujourd'hui), créateur (utilisateur connecté)
+  - Visite : date de la visite (aujourd'hui), observateur (utilisateur connecté)
+
+**🐛 Corrections**
+
+- Correction de la récupération du paramètre `:module_code` lors de la création des vues SQL d'alimentation de la Synthèse (#550 par @maximetoma)
+- Correction de l'édition des sites dans le gestionnaire de sites (#554 par @amandine-sahl) 
+- Correction du fil d'ariane lors de l'ajout d'un site depuis un groupe de sites (#560 par @amandine-sahl)
+- Correction du fil d'ariane dans le gestionnaire de sites qui ne renvoyait pas vers le bon nom de sous-module (#564 par @amandine-sahl)
+- Correction de la prise en compte de la liste des observateurs définie au niveau du sous-module (#562 par @amandine-sahl)
+- Correction du texte de traduction dans la modale de suppression (#546 par @PaulLabruyere)
+- Correction des actions Github. Répercussion de la mise à jour des dépendances (#561 par @amandine-sahl)
+  - pytest
+  - black
+
+**⚠️ Notes de version**
+
+- Si vous souhaitez alimenter le champs "Nom du lieu" (`place_name`) de la table Synthèse avec les noms de site des observations, répercutez l'évolution de la vue d'exemple (`data/synthese_svo.sql`) dans les fichiers `synthese.sql` de vos sous-modules, mettez à jour les vues concernées, puis relancer la synchronisation de la synthèse depuis vos sous-modules de Monitoring concernés.
+
+## 1.2.4 (2025-12-30)
+
+**🚀 Nouveautés**
+
+- Prise en charge du multilingue (#510 par @Pierre-Narcisi)
+
+**🐛 Corrections**
+
+- Chargement incomplet de l'objet méta des formulaires (#530, #535)
+  - nomenclature (#537 par @amandine-sahl)
+  - parents (#531 par @andriacap)
+- Correction de l'édition cartographique des formulaires (#536 par @amandine-sahl)
+- Affichage de la géolocalisation (#505, #536, https://github.com/PnX-SI/GeoNature/pull/3718 @pierre56)
+- Fil d'ariane : perte du niveau groupe de sites sur la page détail d'une visite (#539 par @andriacap)
+ 
 ## 1.2.3 (2025-10-17)
 
 **🐛 Corrections**

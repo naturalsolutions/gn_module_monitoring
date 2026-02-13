@@ -10,6 +10,7 @@ from geonature.utils.env import MA
 from geonature.core.gn_commons.schemas import MediaSchema, ModuleSchema
 from geonature.core.gn_monitoring.models import BibTypeSite
 from geonature.core.gn_meta.schemas import DatasetSchema
+from geonature.core.gn_monitoring.models import TBaseSites
 
 from pypnusershub.db.models import User
 

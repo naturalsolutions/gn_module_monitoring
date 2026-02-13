@@ -3,8 +3,11 @@ import importlib
 import json
 from pathlib import Path
 
+from flask import current_app
 from sqlalchemy import and_, select
 from sqlalchemy.orm.exc import NoResultFound
+
+from pypnusershub.db.models import UserList
 
 from geonature.utils.env import DB
 from geonature.utils.errors import GeoNatureError
@@ -15,7 +18,6 @@ from gn_module_monitoring.monitoring.models import TMonitoringModules
 from gn_module_monitoring.modules.repositories import get_module
 from gn_module_monitoring.utils.routes import query_all_types_site_from_module_id
 from gn_module_monitoring.utils.utils import extract_keys
-
 
 SUB_MODULE_CONFIG_DIR = Path(gn_config["MEDIA_FOLDER"]) / "monitorings/"
 
@@ -341,8 +343,8 @@ def customize_config(elem, custom):
 def get_data_preload(config, module):
     out = {"nomenclature": ["TYPE_MEDIA"]}
 
-    if module.id_list_observer:
-        out["user"] = module.id_list_observer
+    # if getattr(module, "id_list_observer", None):
+    #     out["user"] = module.id_list_observer
 
     for object_type in config:
         if object_type in ["tree", "data"] or not isinstance(config[object_type], dict):
@@ -379,6 +381,22 @@ def get_data_preload(config, module):
     out["nomenclature"] = list(dict.fromkeys(out["nomenclature"]))
 
     return out
+
+
+def get_module_code_list(module):
+    """
+    Récupération du code de la liste des observateurs
+    défini pour le module
+    """
+    if getattr(module, "id_list_observer", None):
+        # Si c'est un module spécifique
+        # Récupération de la liste des observateurs du module
+        id_list = module.id_list_observer
+        menu = DB.session.scalar(select(UserList).where(UserList.id_liste == id_list))
+        return menu.code_liste
+    else:
+        # Sinon récupération du code défini au niveau du module monitoring
+        return current_app.config["MONITORINGS"].get("CODE_OBSERVERS_LIST", {})
 
 
 def config_from_files_customized(type_config, module_code):

@@ -11,7 +11,6 @@ from pypnusershub.tests.utils import set_logged_user_cookie
 
 from gn_module_monitoring.monitoring.models import TMonitoringSitesGroups, TMonitoringModules
 from gn_module_monitoring.monitoring.schemas import MonitoringSitesGroupsSchema
-from gn_module_monitoring.tests.fixtures.generic import *
 
 
 @pytest.mark.usefixtures("client_class")
@@ -194,9 +193,8 @@ class TestSitesGroupsWithModule:
             .where(TNomenclatures.mnemonique == mnemonique)
         ).scalar()
 
-    @pytest.mark.usefixtures("install_module_test")
     @pytest.fixture
-    def add_group(self, test_module_user):
+    def add_group(self, test_module_user, install_module_test):
 
         def _add_group(**kwargs):
             _add_group.counter += 1
