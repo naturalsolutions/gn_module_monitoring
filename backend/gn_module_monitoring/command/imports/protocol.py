@@ -182,6 +182,7 @@ def get_protocol_data(module_code: str, id_destination: int):
                 ]
             )
     for name in ["site", "visit", "observation"]:
+        label_entity = f"{name.capitalize()}e" if name == "visit" else f"{name.capitalize()}"
         if name not in entities:
             continue
         suffix = name if name == "observation" else f"base_{name}"
@@ -189,7 +190,7 @@ def get_protocol_data(module_code: str, id_destination: int):
             [
                 {
                     "name_field": f"id_{suffix}_origin",
-                    "fr_label": f"Identifiant {name} d'origine",
+                    "fr_label": f"Identifiant {label_entity}",
                     "type_field": "text",
                     "type_column": "string",
                     "mandatory": False,
@@ -201,7 +202,7 @@ def get_protocol_data(module_code: str, id_destination: int):
                 },
                 {
                     "name_field": f"id_{suffix}",
-                    "fr_label": f"ID {name.capitalize()}",
+                    "fr_label": f"ID {label_entity}",
                     "type_field": "text",
                     "type_column": "integer",
                     "mandatory": False,
@@ -214,7 +215,7 @@ def get_protocol_data(module_code: str, id_destination: int):
                 },
                 {
                     "name_field": f"uuid_{suffix}",
-                    "fr_label": f"UUID {name.capitalize()}",
+                    "fr_label": f"UUID {label_entity}",
                     "type_field": "text",
                     "type_column": "uuid",
                     "mandatory": False,
