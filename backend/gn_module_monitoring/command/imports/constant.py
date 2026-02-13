@@ -68,6 +68,6 @@ UUID_FIELD_NAME = {
 }
 
 TOOLTIPS = {
-    "id_base_site_origin": "Colonne permettant de faire le lien entre les sites et leurs visites si aucun UUID est fourni",
-    "id_base_visit_origin": "Colonne permettant de faire le lien entre les visites et leurs observations si aucun UUID est fourni",
+    "id_base_site_origin": "Identifiant alphanumérique permettant de faire le lien entre les sites et leurs visites si aucun UUID est fourni",
+    "id_base_visit_origin": "Identifiant alphanumérique permettant de faire le lien entre les visites et leurs observations si aucun UUID est fourni",
 }
