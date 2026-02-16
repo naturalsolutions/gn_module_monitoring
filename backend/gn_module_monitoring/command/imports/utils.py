@@ -14,9 +14,7 @@ from geonature.utils.env import db
 
 
 def ask_confirmation():
-    prompt = (
-        "\nVeuillez confirmer que vous souhaitez effectuer avec ces modifications ? [yes/no]: "
-    )
+    prompt = "\nVeuillez confirmer que vous souhaitez effectuer ces modifications ? [yes/no]: "
 
     response = input(prompt).strip().lower()
 

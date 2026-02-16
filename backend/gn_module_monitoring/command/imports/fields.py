@@ -24,18 +24,22 @@ def prepare_fields(specific_data, generic_data, entity_code, id_destination, par
         "id_module",  # handled manually
         "id_dataset",  # handled manually
         "id_digitiser",  # handled manually
+        "uuid_sites_group",  # handled manually
         "uuid_base_visit",  # handled manually
         "uuid_base_site",  # handled manually
         "uuid_observation",  # handled manually
+        "id_sites_group",  # generated
         "id_base_site",  # generated
         "id_base_visit",  # generated
         "id_observation",  # generated
         "id_nomenclature_type_site",  # handled manually
         "last_visit",  # dynamic
+        "nb_sites",  # dynamic
         "nb_visits",  # dynamic
         "nb_observations",  # dynamic
         "nb_individuals",  # dynamic
         "medias",  # not importable
+        "modules",  # import is only called from a module context
     ]
 
     field_set_manually = []

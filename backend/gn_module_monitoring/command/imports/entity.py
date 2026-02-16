@@ -40,10 +40,10 @@ def get_entities_protocol(module_code: str) -> list:
     tree = data_config.get("tree", {}).get("module", {})
     keys = extract_keys(tree)
     unique_keys = list(dict.fromkeys(keys))
-    if "sites_group" in unique_keys:
-        unique_keys.remove(
-            "sites_group"
-        )  # sites_group are not available for import at the moment.
+    # if "sites_group" in unique_keys:
+    #     unique_keys.remove(
+    #         "sites_group"
+    #     )  # sites_group are not available for import at the moment.
     return unique_keys
 
 
@@ -100,6 +100,7 @@ def insert_entities(
             "obs_detail" if entity_code == "observation_detail" else entity_code
         )
         mapping_entity_object_code = {
+            "sites_group": "MONITORINGS_GRP_SITES",
             "site": "MONITORINGS_SITES",
             "visit": "MONITORINGS_VISITES",
             "observation": "MONITORINGS_OBSERVATIONS",
@@ -209,20 +210,22 @@ def insert_entity_field_relations(protocol_data, id_destination, entity_hierarch
                 bib_themes=bib_themes,
                 is_parent_link=True,
             )
-            get_cor_entity_field(
-                entity_id=entity_id,
-                field_name=f"uuid_base_{parent_code}",
-                id_destination=id_destination,
-                bib_themes=bib_themes,
-                is_parent_link=True,
-            )
-            get_cor_entity_field(
-                entity_id=entity_id,
-                field_name=f"id_base_{parent_code}_origin",
-                id_destination=id_destination,
-                bib_themes=bib_themes,
-                is_parent_link=True,
-            )
+            if parent_code == "sites_group":
+                get_cor_entity_field(
+                    entity_id=entity_id,
+                    field_name=f"uuid_{parent_code}",
+                    id_destination=id_destination,
+                    bib_themes=bib_themes,
+                    is_parent_link=True,
+                )
+            else:
+                get_cor_entity_field(
+                    entity_id=entity_id,
+                    field_name=f"uuid_base_{parent_code}",
+                    id_destination=id_destination,
+                    bib_themes=bib_themes,
+                    is_parent_link=True,
+                )
 
 
 def get_cor_entity_field(
@@ -231,6 +234,8 @@ def get_cor_entity_field(
     """
     Crée une relation entre une entité et un champ dans cor_entity_field
     """
+    print("field_name: ", field_name)
+    print("id_destination: ", id_destination)
 
     id_field = DB.session.execute(
         select(BibFields.id_field).filter_by(name_field=field_name, id_destination=id_destination)
