@@ -186,23 +186,52 @@ class SitesGroupImportActions:
 
     @staticmethod
     def compute_bounding_box(imprt: TImports):
-        from gn_module_monitoring.monitoring.import_actions.site_actions import (
-            SiteImportActions,
-        )
+        import geojson
+        from gn_module_monitoring.monitoring.import_actions.site_actions import SiteImportActions
+
+        def get_bounding_box(points):
+            x_coordinates, y_coordinates = zip(*points)
+
+            return [
+                [
+                    (min(x_coordinates), max(y_coordinates)),
+                    (min(x_coordinates), min(y_coordinates)),
+                    (max(x_coordinates), min(y_coordinates)),
+                    (max(x_coordinates), max(y_coordinates)),
+                    (min(x_coordinates), max(y_coordinates)),
+                ]
+            ]
 
         # Problem with bounding box: the field doesn't have the same name between the transient table and the destination table
         # It  might be the problem
         # TMonitoringSites which has a foreign key with TMonitoringSitesGroups isn't part of GeoNature core
-        # and shouldn't be called from there
-        return compute_bounding_box(
+        # thus can't be called from core function compute_bounding_box(). We aggregate two boxes instead.
+        sites_group_bounding_box = compute_bounding_box(
             imprt=imprt,
             geom_entity_code=SitesGroupImportActions.ENTITY_CODE,
             geom_4326_field_name__transient=SitesGroupImportActions.GEOMETRY_FIELD,
             geom_4326_field_name__destination=EntityImportActionsUtils.get_destination_column_name(
                 SitesGroupImportActions.GEOMETRY_FIELD
             ),
-            child_entity_code=SiteImportActions,
         )
+        children_bounding_box = SiteImportActions.compute_bounding_box(imprt)
+
+        print(children_bounding_box)
+
+        if not children_bounding_box or not sites_group_bounding_box:
+            return children_bounding_box or sites_group_bounding_box
+        elif sites_group_bounding_box and children_bounding_box:
+            return geojson.Polygon(
+                get_bounding_box(
+                    list(
+                        geojson.utils.coords(
+                            geojson.GeometryCollection(
+                                [sites_group_bounding_box, children_bounding_box]
+                            )
+                        )
+                    )
+                )
+            )
 
     @staticmethod
     def check_and_compute_geometries(imprt: TImports):
