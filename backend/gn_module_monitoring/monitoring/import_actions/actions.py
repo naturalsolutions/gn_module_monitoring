@@ -13,6 +13,7 @@ from gn_module_monitoring.monitoring.models import (
     TMonitoringSites,
     TMonitoringVisits,
     TMonitoringObservations,
+    cor_sites_group_module,
 )
 import sqlalchemy as sa
 from sqlalchemy.orm import aliased, joinedload
@@ -81,6 +82,7 @@ class MonitoringImportActions(ImportActions):
     @staticmethod
     def statistics_labels() -> typing.List[ImportStatisticsLabels]:
         return [
+            {"key": "sites_group_count", "value": "Nombre de groupes de sites importés"},
             {"key": "site_count", "value": "Nombre de sites importés"},
             {"key": "visit_count", "value": "Nombre de visites importées"},
             {"key": "observation_count", "value": "Nombre d'observations importées"},
@@ -195,6 +197,7 @@ class MonitoringImportActions(ImportActions):
                 .all()
             )
         }
+
         if isSitesGroup:
             SitesGroupImportActions.generate_id(imprt)
         SiteImportActions.generate_id(imprt)
@@ -217,14 +220,12 @@ class MonitoringImportActions(ImportActions):
                 imprt, entity, isSitesGroup
             )
 
-            print(entity)
             core_fields = []
             core_dest_col_names = ["id_import", "id_digitiser"]
             complement_fields = []
             destination_model = get_entity_model(entity)
             destination_table = destination_model.__table__
             destination_col_names = list(destination_table.columns.keys())
-
             for field in entity_fields:
                 col_name = EntityImportActionsUtils.get_destination_column_name(field.dest_field)
                 if col_name in destination_col_names and col_name not in core_dest_col_names:
@@ -270,13 +271,19 @@ class MonitoringImportActions(ImportActions):
 
             id_col_name = f"id_base_{entity.code}"
             json_args = []
+            # Fields not to insert in data column
+            SITES_GROUP_ID_FIELDS = ["id_sites_group", "uuid_sites_group"]
+            is_sites_group_id_fields = False
             for field in complement_fields:
-                json_args.extend(
-                    [
-                        EntityImportActionsUtils.get_destination_column_name(field.dest_field),
-                        transient_table.c[field.dest_field],
-                    ]
-                )
+                if field.name_field not in SITES_GROUP_ID_FIELDS:
+                    json_args.extend(
+                        [
+                            EntityImportActionsUtils.get_destination_column_name(field.dest_field),
+                            transient_table.c[field.dest_field],
+                        ]
+                    )
+                else:
+                    is_sites_group_id_fields = True
 
             complement_select_stmt = None
             model_complements = get_entity_model_complements(entity)
@@ -286,14 +293,22 @@ class MonitoringImportActions(ImportActions):
                     cols = [sa.func.json_build_object(*json_args).label("data")]
                 if entity.code != "observation":
                     cols.insert(0, transient_table.c[id_col_name])
-                complement_select_stmt = (
-                    sa.select(*cols)
-                    .where(transient_table.c.id_import == imprt.id_import)
-                    .where(transient_table.c[entity.validity_column] == True)
-                    .order_by(
-                        transient_table.c.line_no
-                    )  # Required for the process of inserting observation complements
-                )
+                if entity.code == "site" and is_sites_group_id_fields:
+                    complement_select_stmt = (
+                        sa.select(*cols, transient_table.c["id_sites_group"])
+                        .where(transient_table.c.id_import == imprt.id_import)
+                        .where(transient_table.c[entity.validity_column] == True)
+                        .order_by(transient_table.c.line_no)
+                    )
+                else:
+                    complement_select_stmt = (
+                        sa.select(*cols)
+                        .where(transient_table.c.id_import == imprt.id_import)
+                        .where(transient_table.c[entity.validity_column] == True)
+                        .order_by(
+                            transient_table.c.line_no
+                        )  # Required for the process of inserting observation complements
+                    )
 
             types_site_select_stmt = None
             if entity.code == "site":
@@ -301,6 +316,16 @@ class MonitoringImportActions(ImportActions):
                     sa.select(
                         transient_table.c["id_base_site"],
                         sa.func.unnest(transient_table.c["s__types_site"]).label("id_type_site"),
+                    )
+                    .where(transient_table.c.id_import == imprt.id_import)
+                    .where(transient_table.c[entity.validity_column] == True)
+                )
+
+            if entity.code == "sites_group":
+                cor_sites_group_module_select = (
+                    sa.select(
+                        transient_table.c["id_sites_group"],
+                        sa.literal(imprt.destination.id_module).label("id_module"),
                     )
                     .where(transient_table.c.id_import == imprt.id_import)
                     .where(transient_table.c[entity.validity_column] == True)
@@ -379,15 +404,26 @@ class MonitoringImportActions(ImportActions):
                         row_count += db.session.execute(core_insert_stmt).rowcount
 
                         if complement_select_stmt is not None:
-                            db.session.execute(
-                                sa.insert(model_complements).from_select(
-                                    names=[id_col_name, "data"],
-                                    select=complement_select_stmt.filter(
-                                        transient_table.c["line_no"] >= min_line_no,
-                                        transient_table.c["line_no"] < max_line_no,
-                                    ),
+                            if entity.code == "site" and is_sites_group_id_fields:
+                                db.session.execute(
+                                    sa.insert(model_complements).from_select(
+                                        names=[id_col_name, "data", "id_sites_group"],
+                                        select=complement_select_stmt.filter(
+                                            transient_table.c["line_no"] >= min_line_no,
+                                            transient_table.c["line_no"] < max_line_no,
+                                        ),
+                                    )
                                 )
-                            )
+                            else:
+                                db.session.execute(
+                                    sa.insert(model_complements).from_select(
+                                        names=[id_col_name, "data"],
+                                        select=complement_select_stmt.filter(
+                                            transient_table.c["line_no"] >= min_line_no,
+                                            transient_table.c["line_no"] < max_line_no,
+                                        ),
+                                    )
+                                )
 
                         if types_site_select_stmt is not None:
                             db.session.execute(
@@ -399,6 +435,18 @@ class MonitoringImportActions(ImportActions):
                                     ),
                                 )
                             )
+
+                        if cor_sites_group_module_select is not None:
+                            db.session.execute(
+                                sa.insert(cor_sites_group_module).from_select(
+                                    ["id_sites_group", "id_module"],
+                                    cor_sites_group_module_select.filter(
+                                        transient_table.c["line_no"] >= min_line_no,
+                                        transient_table.c["line_no"] < max_line_no,
+                                    ),
+                                )
+                            )
+
                     except Exception as e:
                         print(e)
                         pass  # entity has no data to import
@@ -484,7 +532,7 @@ class MonitoringImportActions(ImportActions):
                         )
                     orphans = db.session.execute(query).fetchall()
                     if orphans:
-                        description = "L’import ne peut pas être supprimé car cela provoquerai la suppression de données ne provenant pas de cet import :"
+                        description = "L’import ne peut pas être supprimé car cela provoquerait la suppression de données ne provenant pas de cet import :"
                         description += "<ul>"
                         for id_parent, ids_child in orphans:
                             description += f"<li>{entity.label} {id_parent} : {child.label}s {*ids_child, }</li>"
