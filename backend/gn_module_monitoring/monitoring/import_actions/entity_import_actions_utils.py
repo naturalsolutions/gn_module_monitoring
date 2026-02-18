@@ -5,6 +5,7 @@ import re
 from geonature.utils.env import db
 import sqlalchemy as sa
 from sqlalchemy.orm import aliased, joinedload
+from sqlalchemy.orm.exc import NoResultFound
 
 from geonature.core.imports.utils import (
     get_mapping_data,
@@ -82,3 +83,12 @@ class EntityImportActionsUtils:
             }
 
         return entity_fields
+
+    @staticmethod
+    def is_entity_defined_in_import(imprt: TImports, entity_code: str) -> bool:
+        try:
+            EntityImportActionsUtils.get_entity(imprt, entity_code)
+
+            return True
+        except NoResultFound:
+            return False
