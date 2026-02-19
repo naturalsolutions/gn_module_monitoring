@@ -13,6 +13,10 @@ from geoalchemy2 import Geometry
 from geonature.utils.env import db
 
 
+def destination_name(module_name: str):
+    return f"Monitoring - {module_name}"
+
+
 def ask_confirmation():
     prompt = (
         "\nVeuillez confirmer que vous souhaitez effectuer avec ces modifications ? [yes/no]: "

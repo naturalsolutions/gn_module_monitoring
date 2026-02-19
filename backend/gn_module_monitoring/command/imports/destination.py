@@ -1,3 +1,4 @@
+from gn_module_monitoring.command.imports.utils import destination_name
 from sqlalchemy import select, exists
 import sqlalchemy as sa
 
@@ -48,7 +49,7 @@ def upsert_bib_destination(module_data: dict) -> Destination:
     destination_data = {
         "id_module": module_monitoring_code.id_module,
         "code": module_data["module_code"],
-        "label": "Monitoring - " + module_data["module_label"],
+        "label": destination_name(module_data["module_label"]),
         "table_name": f"t_imports_{module_data['module_code'].lower()}",
         "active": True,
     }

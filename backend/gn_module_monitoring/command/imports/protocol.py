@@ -1,4 +1,5 @@
 import os
+from gn_module_monitoring.command.imports.utils import destination_name
 from gn_module_monitoring.config.repositories import get_config
 from gn_module_monitoring.config.utils import (
     json_from_file,
@@ -295,7 +296,7 @@ def get_existing_protocol_state(id_destination: int, module_data):
     destination = DB.session.execute(
         select(Destination).filter_by(id_destination=id_destination)
     ).scalar()
-    new_label = module_data["module"].get("module_label")
+    new_label = destination_name(module_data["module"].get("module_label"))
     return {
         "fields": [field.__dict__ for field in existing_fields],
         "entities": [entity.__dict__ for entity in existing_entities],
