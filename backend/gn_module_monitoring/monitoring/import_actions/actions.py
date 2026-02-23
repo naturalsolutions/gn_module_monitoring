@@ -219,12 +219,6 @@ class MonitoringImportActions(ImportActions):
             if entity.code == "visit":
                 core_select_cols.append(sa.literal(imprt.destination.id_module).label("id_module"))
                 core_dest_col_names.append("id_module")
-                # FIXME: should be done automatically :/
-                if "v__observers" in map(lambda x: x.name_field, entity_fields):
-                    core_select_cols.append(
-                        transient_table.c.src_v__observers.label("observers_txt")
-                    )
-                    core_dest_col_names.append("observers_txt")
             core_select_stmt = (
                 sa.select(*core_select_cols)
                 .where(transient_table.c.id_import == imprt.id_import)
@@ -345,50 +339,64 @@ class MonitoringImportActions(ImportActions):
 
                         db.session.execute(final_insert)
                 else:
-                    try:
-                        core_insert_stmt = sa.insert(destination_model).from_select(
-                            names=core_dest_col_names, select=core_select
+
+                    core_insert_stmt = sa.insert(destination_model).from_select(
+                        names=core_dest_col_names, select=core_select
+                    )
+                    row_count += db.session.execute(core_insert_stmt).rowcount
+
+                    if complement_select_stmt is not None:
+                        db.session.execute(
+                            sa.insert(model_complements).from_select(
+                                names=[id_col_name, "data"],
+                                select=complement_select_stmt.filter(
+                                    transient_table.c["line_no"] >= min_line_no,
+                                    transient_table.c["line_no"] < max_line_no,
+                                ),
+                            )
                         )
-                        row_count += db.session.execute(core_insert_stmt).rowcount
 
-                        if complement_select_stmt is not None:
-                            db.session.execute(
-                                sa.insert(model_complements).from_select(
-                                    names=[id_col_name, "data"],
-                                    select=complement_select_stmt.filter(
-                                        transient_table.c["line_no"] >= min_line_no,
-                                        transient_table.c["line_no"] < max_line_no,
-                                    ),
-                                )
+                    if types_site_select_stmt is not None:
+                        db.session.execute(
+                            sa.insert(cor_site_type).from_select(
+                                ["id_base_site", "id_type_site"],
+                                types_site_select_stmt.filter(
+                                    transient_table.c["line_no"] >= min_line_no,
+                                    transient_table.c["line_no"] < max_line_no,
+                                ),
                             )
-
-                        if types_site_select_stmt is not None:
-                            db.session.execute(
-                                sa.insert(cor_site_type).from_select(
-                                    ["id_base_site", "id_type_site"],
-                                    types_site_select_stmt.filter(
-                                        transient_table.c["line_no"] >= min_line_no,
-                                        transient_table.c["line_no"] < max_line_no,
-                                    ),
-                                )
-                            )
-                    except Exception as e:
-                        print(e)
-                        pass  # entity has no data to import
+                        )
 
                 yield (batch + 1) / batch_count
             imprt.statistics.update({f"{entity.code}_count": row_count})
 
-            if entity.code == "visit":
-                ImportActions.bind_matched_observers(
-                    imprt,
-                    TBaseVisits,
-                    "observers_txt",
-                    "id_base_visit",
-                    CorVisitObserver,
-                    ["id_base_visit", "id_role"],
-                )
+            if entity.code == "visit" and MonitoringImportActions.is_observer_mapping_enabled():
 
+                if "v__observers" in imprt.fieldmapping:
+                    if imprt.fieldmapping["v__observers"].get("constant_value", None) is not None:
+                        db.session.execute(
+                            sa.insert(CorVisitObserver).from_select(
+                                ["id_base_visit", "id_role"],
+                                sa.select(
+                                    transient_table.c.id_base_visit,
+                                    sa.func.unnest(transient_table.c["v__observers"]).label(
+                                        "id_role"
+                                    ),
+                                )
+                                .where(transient_table.c["v__observers"] != None)
+                                .where(transient_table.c.id_import == imprt.id_import)
+                                .where(transient_table.c[entity.validity_column] == True),
+                            )
+                        )
+                    else:
+                        ImportActions.bind_matched_observers(
+                            imprt,
+                            transient_table,
+                            "src_v__observers",
+                            "id_base_visit",
+                            CorVisitObserver,
+                            ["id_base_visit", "id_role"],
+                        )
         imprt.statistics.update(ObservationImportActions.compute_taxa_statistics(imprt))
 
         # filter empty statistics
