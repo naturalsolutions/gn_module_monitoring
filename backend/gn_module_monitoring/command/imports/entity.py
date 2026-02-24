@@ -40,10 +40,7 @@ def get_entities_protocol(module_code: str) -> list:
     tree = data_config.get("tree", {}).get("module", {})
     keys = extract_keys(tree)
     unique_keys = list(dict.fromkeys(keys))
-    # if "sites_group" in unique_keys:
-    #     unique_keys.remove(
-    #         "sites_group"
-    #     )  # sites_group are not available for import at the moment.
+
     return unique_keys
 
 
@@ -234,8 +231,6 @@ def get_cor_entity_field(
     """
     Crée une relation entre une entité et un champ dans cor_entity_field
     """
-    print("field_name: ", field_name)
-    print("id_destination: ", id_destination)
 
     id_field = DB.session.execute(
         select(BibFields.id_field).filter_by(name_field=field_name, id_destination=id_destination)
