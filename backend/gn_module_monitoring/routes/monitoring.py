@@ -363,7 +363,7 @@ def export_all_observations(module_code, method):
             geometry_field=None,
             srid=None,
         )
-    except KeyError:
+    except KeyError or sa.exc.NoSuchTableError:
         return f"table v_export_{module_code.lower()}_{method} doesn't exist", 404
 
     model = export.get_model()

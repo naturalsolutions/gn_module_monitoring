@@ -60,8 +60,7 @@ def get_protocol_data(module_code: str, id_destination: int):
         if "__MODULE.TYPES_SITE" in config_module["custom"]:
             type_site_confs = config_module["custom"]["__MODULE.TYPES_SITE"]
 
-    module_config_path = module_config_dir_path / "config.json"
-    module_config = json_from_file(module_config_path)
+    module_config = config_module["module"]
     tree = module_config.get("tree", {}).get("module", {})
 
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -69,8 +68,7 @@ def get_protocol_data(module_code: str, id_destination: int):
     entity_confs = {}
     # Ensure all confs are loaded in a dict
     for entity_code in entities:
-        file_path = module_config_dir_path / f"{entity_code}.json"
-        specific_data = json_from_file(file_path)
+        specific_data = config_module.get(entity_code, {})
         if entity_code == "site":
             for type_site_conf in type_site_confs:
                 if type_site_conf.get("config", None):

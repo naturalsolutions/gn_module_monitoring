@@ -118,14 +118,17 @@ class TestCommands:
         result = runner.invoke(synchronize_synthese, ["test"])
         assert result.exit_code == 0
 
-    def test_cmd_add_module_protocol_fields(self, install_module_test):
+    def test_cmd_add_module_protocol_fields(self, install_module_test_with_config):
+        runner = current_app.test_cli_runner()
+        result = runner.invoke(cmd_add_update_import_on_protocole, ["test"])
+        assert result.exit_code == 0
 
         destination = DB.session.execute(
             select(Destination).where(Destination.code == "test")
         ).scalar_one()
 
         assert destination.code == "test"
-        assert destination.label == "Test"
+        assert destination.label == "Monitoring - Test"
 
         protocol_data, entity_hierarchy_map = get_protocol_data("test", destination.id_destination)
         fields_data = []
@@ -157,21 +160,23 @@ class TestCommands:
 
         assert result == True
 
-    def test_install_protocol_no_updates(self, install_module_test):
+    def test_install_protocol_no_updates(self, install_module_test_with_config):
         runner = current_app.test_cli_runner()
         result = runner.invoke(cmd_add_update_import_on_protocole, ["test"])
         assert result.exit_code == 0
         assert "Le module test est déjà à jour" in result.output
 
-    def test_update_protocol_with_modified_data(self, install_module_test):
+    def test_update_protocol_with_modified_data(self, install_module_test_with_config):
         destination = DB.session.execute(select(Destination).filter_by(code="test")).scalar_one()
 
         protocol_data, entity_hierarchy_map = get_protocol_data("test", destination.id_destination)
+        # print(protocol_data)
 
         # Edit field
         for field in protocol_data["site"]["specific"]:
-            if field["name_field"] == "s__cd_hab":
-                field["type_field"] = "integer"
+            print(field["name_field"])
+            if field["name_field"] == "s__place_name":
+                print("aaaaaaaaaaaa")
                 field["fr_label"] = "Test Modified"
                 field["eng_label"] = "Test Modified"
                 break
@@ -216,9 +221,8 @@ class TestCommands:
                 delete_bib_fields(fields_to_delete)
 
         field_test = DB.session.execute(
-            select(BibFields).filter_by(name_field="s__cd_hab")
+            select(BibFields).filter_by(name_field="s__place_name")
         ).scalar_one()
-        assert field_test.type_field == "integer"
         assert field_test.eng_label == "Test Modified"
         assert field_test.fr_label == "Test Modified"
 

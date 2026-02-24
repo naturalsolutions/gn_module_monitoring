@@ -19,6 +19,7 @@ TYPE_WIDGET = {
     "time": "varchar",
     "taxonomy": "integer",
     "site": "integer",
+    "individuals": "integer",
 }
 
 FORBIDDEN_SQL_INSTRUCTION = [

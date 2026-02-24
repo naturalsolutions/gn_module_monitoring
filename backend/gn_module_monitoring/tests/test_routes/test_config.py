@@ -4,6 +4,8 @@ from flask import url_for, current_app
 from pypnusershub.tests.utils import set_logged_user_cookie
 
 from gn_module_monitoring.monitoring.models import TMonitoringModules
+from geonature.utils.env import db
+from sqlalchemy import select
 
 # Liste des clés de premier niveau retournée par la config d'un module
 CONFIG_KEYS = (

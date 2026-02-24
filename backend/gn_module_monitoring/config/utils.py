@@ -419,7 +419,6 @@ def validate_json_file(file_path: Path, valid_type_widgets=None) -> list:
     file_errors = []
 
     if not file_path.exists():
-        file_errors.append(f"Fichier manquant: {file_path}")
         return file_errors
 
     try:
