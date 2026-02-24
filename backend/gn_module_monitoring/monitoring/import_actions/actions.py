@@ -132,9 +132,11 @@ class MonitoringImportActions(ImportActions):
         isSitesGroup = EntityImportActionsUtils.is_entity_defined_in_import(
             imprt, SitesGroupImportActions.ENTITY_CODE
         )
-        isSitesGroupMandatory = None
+        isSitesGroupMandatory = False
         if isSitesGroup:
-            isSitesGroupMandatory = False if "site" in config["tree"]["module"] else True
+            # Some protocols make sites group optionals by setting a site entity at the same level than sites group in tree config
+            isSitesGroupMandatory = "site" not in config["tree"]["module"]
+
         isVisit = EntityImportActionsUtils.is_entity_defined_in_import(
             imprt, VisitImportActions.ENTITY_CODE
         )

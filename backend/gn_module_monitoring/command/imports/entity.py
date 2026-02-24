@@ -31,6 +31,16 @@ def get_entities_protocol(module_code: str) -> list:
         list
             Liste des entités du module.
     """
+
+    entities_order = [
+        "sites_group",
+        "site",
+        "visit",
+        "observation",
+        "observation_detail",
+        "individual",
+    ]
+
     module_path = monitoring_module_config_path(module_code)
 
     if not (module_path / "config.json").is_file():
@@ -41,7 +51,13 @@ def get_entities_protocol(module_code: str) -> list:
     keys = extract_keys(tree)
     unique_keys = list(dict.fromkeys(keys))
 
-    return unique_keys
+    unique_keys_ordered = []
+    for entity in entities_order:
+        for unique_key in unique_keys:
+            if unique_key == entity:
+                unique_keys_ordered.append(unique_key)
+
+    return unique_keys_ordered
 
 
 def get_entity_parent(tree: dict, entity_code: str):
@@ -51,14 +67,17 @@ def get_entity_parent(tree: dict, entity_code: str):
 
     def find_parent(node, target, parent=None):
         if target in node:
-            if not (target == "site" and "sites_group" in node):
-                return parent
+            return parent
         for key, value in node.items():
             if isinstance(value, dict):
                 found = find_parent(value, target, key)
                 if found:
                     return found
         return None
+
+    # Handle protocol which have sites and sites groups at the same level in config
+    if entity_code == "site" and "site" in tree and "sites_group" in tree:
+        return "sites_group"
 
     parent_entity = find_parent(tree, entity_code)
     return parent_entity
