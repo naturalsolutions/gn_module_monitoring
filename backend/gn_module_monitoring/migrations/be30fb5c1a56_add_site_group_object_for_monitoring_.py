@@ -17,21 +17,17 @@ depends_on = None
 
 
 def upgrade():
-    op.execute(
-        """
+    op.execute("""
         INSERT INTO gn_permissions.cor_object_module (id_object ,id_module)
         VALUES
         ((select id_object from gn_permissions.t_objects where code_object = 'MONITORINGS_GRP_SITES'),
         (select id_module from gn_commons.t_modules where module_code = 'MONITORINGS'));
-    """
-    )
+    """)
 
 
 def downgrade():
-    op.execute(
-        """
+    op.execute("""
         DELETE FROM gn_permissions.cor_object_module
         WHERE id_object = (select id_object from gn_permissions.t_objects where code_object = 'MONITORINGS_GRP_SITES')
         AND id_module = (select id_module from gn_commons.t_modules where module_code = 'MONITORINGS');
-    """
-    )
+    """)

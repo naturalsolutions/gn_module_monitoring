@@ -17,8 +17,7 @@ depends_on = None
 
 
 def upgrade():
-    op.execute(
-        """
+    op.execute("""
         INSERT INTO
             gn_permissions.t_objects(
             code_object,
@@ -26,10 +25,8 @@ def upgrade():
             )
         VALUES
             ('TYPES_SITES','Types de sites à associer aux protocoles du module MONITORINGS')
-        """
-    )
-    op.execute(
-        """
+        """)
+    op.execute("""
         INSERT INTO
             gn_permissions.t_permissions_available (
                 id_module,
@@ -66,10 +63,8 @@ def upgrade():
             gn_permissions.t_objects o ON o.code_object = v.object_code
         JOIN
             gn_permissions.bib_actions a ON a.code_action = v.action_code
-        """
-    )
-    op.execute(
-        """
+        """)
+    op.execute("""
         WITH bad_permissions AS (
             SELECT
                 p.id_permission
@@ -95,23 +90,19 @@ def upgrade():
                 USING bad_permissions bp
         WHERE
             bp.id_permission = p.id_permission;
-        """
-    )
+        """)
 
-    op.execute(
-        """
+    op.execute("""
         INSERT INTO gn_permissions.t_objects (code_object, description_object)
             VALUES
                 ('MONITORINGS_MODULES', 'Permissions sur les modules')
             ON CONFLICT DO NOTHING
         ;
-    """
-    )
+    """)
 
 
 def downgrade():
-    op.execute(
-        """
+    op.execute("""
         DELETE FROM
             gn_permissions.t_permissions_available pa
         USING
@@ -126,11 +117,9 @@ def downgrade():
                 FROM gn_permissions.t_objects to2 
                 WHERE code_object IN ('TYPES_SITES', 'MONITORINGS_SITES', 'MONITORINGS_GRP_SITES')
             )
-        """
-    )
+        """)
 
-    op.execute(
-        """
+    op.execute("""
         DELETE FROM
             gn_permissions.t_permissions p
         USING gn_permissions.t_objects o
@@ -138,14 +127,11 @@ def downgrade():
                 p.id_object = o.id_object
                 AND o.code_object IN ('TYPES_SITES', 'MONITORINGS_SITES', 'MONITORINGS_GRP_SITES', 'MONITORINGS_MODULES')
             ;
-        """
-    )
+        """)
 
-    op.execute(
-        """
+    op.execute("""
         DELETE FROM
             gn_permissions.t_objects
             WHERE code_object IN ('TYPES_SITES', 'MONITORINGS_SITES', 'MONITORINGS_GRP_SITES', 'MONITORINGS_MODULES')
         ;
-        """
-    )
+        """)

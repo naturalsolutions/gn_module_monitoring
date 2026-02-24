@@ -17,20 +17,16 @@ depends_on = None
 
 
 def upgrade():
-    op.execute(
-        """
+    op.execute("""
         UPDATE gn_permissions.t_objects
                SET code_object = REPLACE(code_object, 'GNM_', 'MONITORINGS_')
         WHERE code_object like 'GNM_%'
-               """
-    )
+               """)
 
 
 def downgrade():
-    op.execute(
-        """
+    op.execute("""
         UPDATE gn_permissions.t_objects
                SET code_object = REPLACE(code_object, 'MONITORINGS_', 'GNM_')
         WHERE code_object like 'MONITORINGS_%'
-    """
-    )
+    """)
