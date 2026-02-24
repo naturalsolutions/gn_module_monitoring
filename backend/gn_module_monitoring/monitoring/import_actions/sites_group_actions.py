@@ -216,8 +216,6 @@ class SitesGroupImportActions:
         )
         children_bounding_box = SiteImportActions.compute_bounding_box(imprt)
 
-        print(children_bounding_box)
-
         if not children_bounding_box or not sites_group_bounding_box:
             return children_bounding_box or sites_group_bounding_box
         elif sites_group_bounding_box and children_bounding_box:
