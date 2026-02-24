@@ -17,7 +17,8 @@ depends_on = None
 
 
 def upgrade():
-    op.execute("""
+    op.execute(
+        """
 
         DROP TRIGGER IF EXISTS trg_delete_synthese_observations ON gn_monitoring.t_observations;
         DROP FUNCTION IF EXISTS gn_synthese.fct_trg_delete_synthese_observations();
@@ -48,14 +49,17 @@ def upgrade():
         CREATE TRIGGER trg_delete_synthese_visits AFTER DELETE ON gn_monitoring.t_base_visits
             FOR EACH ROW EXECUTE PROCEDURE gn_synthese.fct_trg_delete_synthese_visits();
 
-    """)
+    """
+    )
 
 
 def downgrade():
-    op.execute("""
+    op.execute(
+        """
         DROP TRIGGER trg_delete_synthese_observations ON gn_monitoring.t_observations;
         DROP FUNCTION gn_synthese.fct_trg_delete_synthese_observations();
 
         DROP TRIGGER trg_delete_synthese_visits ON gn_monitoring.t_base_visits;
         DROP FUNCTION gn_synthese.fct_trg_delete_synthese_visits();
-    """)
+    """
+    )

@@ -21,7 +21,8 @@ monitorings_schema = "gn_monitoring"
 
 
 def upgrade():
-    op.execute("""
+    op.execute(
+        """
     CREATE TABLE gn_monitoring.cor_sites_group_module (
         id_sites_group int4 NOT NULL,
         id_module int4 NOT NULL,
@@ -29,13 +30,16 @@ def upgrade():
         CONSTRAINT fk_cor_sites_group_module_id_sites_group FOREIGN KEY (id_sites_group) REFERENCES gn_monitoring.t_sites_groups(id_sites_group) ON DELETE CASCADE ON UPDATE CASCADE,
         CONSTRAINT fk_cor_sites_group_module_id_module FOREIGN KEY (id_module) REFERENCES gn_commons.t_modules(id_module) ON DELETE NO ACTION ON UPDATE CASCADE
     );
-    """)
-    statement = sa.text(f"""
+    """
+    )
+    statement = sa.text(
+        f"""
         INSERT INTO gn_monitoring.cor_sites_group_module
             (id_sites_group, id_module)
         SELECT id_sites_group, id_module
         FROM gn_monitoring.t_sites_groups; 
-        """)
+        """
+    )
     op.execute(statement)
     op.drop_column("t_sites_groups", "id_module", schema=monitorings_schema)
 
@@ -58,7 +62,8 @@ def downgrade():
     )
 
     # LIMITATION: On ne prend que le premier module associé
-    statement = sa.text(f"""
+    statement = sa.text(
+        f"""
         WITH sgm AS (
             SELECT id_sites_group , min(id_module)
             FROM gn_monitoring.cor_sites_group_module
@@ -68,10 +73,13 @@ def downgrade():
             SET id_module = sgm.id_module
         FROM sgm
         WHERE tsg.id_sites_group = sgm.id_sites_group;
-        """)
+        """
+    )
     op.execute(statement)
 
     op.alter_column("t_sites_groups", "id_module", nullable=False, schema=monitorings_schema)
-    op.execute("""
+    op.execute(
+        """
     DROP TABLE gn_monitoring.cor_sites_group_module;
-    """)
+    """
+    )
