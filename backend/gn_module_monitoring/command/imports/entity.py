@@ -215,10 +215,24 @@ def insert_entity_field_relations(protocol_data, id_destination, entity_hierarch
                     bib_themes=bib_themes,
                     is_parent_link=True,
                 )
+                get_cor_entity_field(
+                    entity_id=entity_id,
+                    field_name=f"id_{parent_code}_origin",
+                    id_destination=id_destination,
+                    bib_themes=bib_themes,
+                    is_parent_link=True,
+                )
             else:
                 get_cor_entity_field(
                     entity_id=entity_id,
                     field_name=f"uuid_base_{parent_code}",
+                    id_destination=id_destination,
+                    bib_themes=bib_themes,
+                    is_parent_link=True,
+                )
+                get_cor_entity_field(
+                    entity_id=entity_id,
+                    field_name=f"id_base_{parent_code}_origin",
                     id_destination=id_destination,
                     bib_themes=bib_themes,
                     is_parent_link=True,
