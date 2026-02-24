@@ -9,12 +9,15 @@ from geonature.core.gn_monitoring.models import (
 )
 
 from gn_module_monitoring.monitoring.models import (
-    TMonitoringObservations,
+    TMonitoringSitesGroups,
     TMonitoringSites,
     TMonitoringVisits,
+    TMonitoringObservations,
 )
 import sqlalchemy as sa
 from sqlalchemy.orm import aliased, joinedload
+from sqlalchemy.inspection import inspect
+from werkzeug.exceptions import Conflict
 from geonature.core.imports.actions import ImportActions, ImportStatisticsLabels
 from geonature.core.imports.checks.sql.core import check_orphan_rows, init_rows_validity
 from geonature.core.imports.models import Entity, TImports
@@ -30,6 +33,9 @@ import typing
 
 
 from .entity_import_actions_utils import EntityImportActionsUtils
+from gn_module_monitoring.monitoring.import_actions.sites_group_actions import (
+    SitesGroupImportActions,
+)
 from gn_module_monitoring.monitoring.import_actions.site_actions import SiteImportActions
 from gn_module_monitoring.monitoring.import_actions.visit_actions import VisitImportActions
 from gn_module_monitoring.monitoring.import_actions.observation_actions import (
@@ -47,6 +53,8 @@ def get_entities(imprt: TImports) -> typing.Tuple[Entity, Entity, Entity]:
 
 
 def get_entity_model(entity: Entity):
+    if entity.code == "sites_group":
+        return TMonitoringSitesGroups
     if entity.code == "site":
         return TBaseSites
     elif entity.code == "visit":
@@ -119,6 +127,9 @@ class MonitoringImportActions(ImportActions):
 
         config = get_config(imprt.destination.code)
 
+        isSitesGroup = EntityImportActionsUtils.is_entity_defined_in_import(
+            imprt, SitesGroupImportActions.ENTITY_CODE
+        )
         isVisit = EntityImportActionsUtils.is_entity_defined_in_import(
             imprt, VisitImportActions.ENTITY_CODE
         )
@@ -134,19 +145,25 @@ class MonitoringImportActions(ImportActions):
 
         # We first check site and visit consistency in order to avoid checking
         # incoherent data
+        if isSitesGroup:
+            SitesGroupImportActions.check_entity_data_consistency(imprt)
         SiteImportActions.check_entity_data_consistency(imprt)
         if isVisit:
             VisitImportActions.check_entity_data_consistency(imprt)
 
         # We run dataframes checks before SQL checks in order to avoid
         # check_types overriding generated values during SQL checks.
+        if isSitesGroup:
+            SitesGroupImportActions.check_dataframe(imprt, config)
         SiteImportActions.check_dataframe(imprt, config)
         if isVisit:
             VisitImportActions.check_dataframe(imprt)
         if isObservation:
             ObservationImportActions.check_dataframe(imprt)
 
-        SiteImportActions.check_sql(imprt)
+        if isSitesGroup:
+            SitesGroupImportActions.check_sql(imprt)
+        SiteImportActions.check_sql(imprt, isSitesGroup)
         if isVisit:
             VisitImportActions.check_sql(imprt)
         if isObservation:
@@ -154,6 +171,9 @@ class MonitoringImportActions(ImportActions):
 
     @staticmethod
     def import_data_to_destination(imprt: TImports) -> None:
+        isSitesGroup = EntityImportActionsUtils.is_entity_defined_in_import(
+            imprt, SitesGroupImportActions.ENTITY_CODE
+        )
         isVisit = EntityImportActionsUtils.is_entity_defined_in_import(
             imprt, VisitImportActions.ENTITY_CODE
         )
@@ -175,12 +195,16 @@ class MonitoringImportActions(ImportActions):
                 .all()
             )
         }
+        if isSitesGroup:
+            SitesGroupImportActions.generate_id(imprt)
         SiteImportActions.generate_id(imprt)
         if isVisit:
             VisitImportActions.generate_id(imprt)
         if isObservation:
             ObservationImportActions.generate_id(imprt)
 
+        if isSitesGroup:
+            SiteImportActions.set_parent_id_from_line_no(imprt)
         if isVisit:
             VisitImportActions.set_parent_id_from_line_no(imprt)
         if isObservation:
@@ -189,8 +213,11 @@ class MonitoringImportActions(ImportActions):
         for entity in entities.values():
             print(f"--------- {entity.code}")
 
-            entity_fields = EntityImportActionsUtils.get_destination_fields(imprt, entity)
+            entity_fields = EntityImportActionsUtils.get_destination_fields(
+                imprt, entity, isSitesGroup
+            )
 
+            print(entity)
             core_fields = []
             core_dest_col_names = ["id_import", "id_digitiser"]
             complement_fields = []
@@ -408,11 +435,87 @@ class MonitoringImportActions(ImportActions):
             imprt.statistics.pop(key)
 
     @staticmethod
+    def remove_data_from_destination(imprt: TImports):
+        """
+        Remove data from destination database for a given import.
+
+        Parameters
+        ----------
+        imprt : TImports
+            The import to remove data from.
+
+        Notes
+        -----
+        This method is called when an import is deleted.
+        It removes from the destination database all data that was created
+        by the import.
+
+        If a child entity (e.g. Habitat) was created later on an imported
+        parent entity (e.g. Station), deleting the imported entity will
+        be refused !
+        """
+        entities = db.session.scalars(
+            sa.select(Entity)
+            .where(Entity.destination == imprt.destination)
+            .order_by(sa.desc(Entity.order))
+        ).all()
+        for entity in entities:
+            parent_table = entity.get_destination_table()
+            if entity.childs:
+                for child in entity.childs:
+                    child_table = child.get_destination_table()
+                    (parent_pk,) = inspect(parent_table).primary_key.columns
+                    (child_pk,) = inspect(child_table).primary_key.columns
+                    # Looking for parent rows belonging to this import with child rows
+                    # not belonging to this import.
+                    # We use is_distinct_from to match rows with NULL id_import.
+
+                    if parent_table.name == "t_sites_groups":
+                        query = (
+                            sa.select(parent_pk, sa.func.array_agg(child_pk))
+                            .select_from(parent_table.join(TMonitoringSites))
+                            .where(
+                                parent_table.c.id_import == imprt.id_import,
+                                TMonitoringSites.id_import.is_distinct_from(imprt.id_import),
+                            )
+                            .group_by(parent_pk)
+                        )
+                    else:
+                        query = (
+                            sa.select(parent_pk, sa.func.array_agg(child_pk))
+                            .select_from(parent_table.join(child_table))
+                            .where(
+                                parent_table.c.id_import == imprt.id_import,
+                                child_table.c.id_import.is_distinct_from(imprt.id_import),
+                            )
+                            .group_by(parent_pk)
+                        )
+                    orphans = db.session.execute(query).fetchall()
+                    if orphans:
+                        description = "L’import ne peut pas être supprimé car cela provoquerai la suppression de données ne provenant pas de cet import :"
+                        description += "<ul>"
+                        for id_parent, ids_child in orphans:
+                            description += f"<li>{entity.label} {id_parent} : {child.label}s {*ids_child, }</li>"
+                        description += "</ul>"
+                        raise Conflict(description)
+            db.session.execute(
+                sa.delete(parent_table).where(parent_table.c.id_import == imprt.id_import)
+            )
+
+    @staticmethod
     def report_plot(imprt: TImports) -> StandaloneEmbedJson:
         return None
 
     @staticmethod
     def compute_bounding_box(imprt: TImports):
+        isSitesGroup = EntityImportActionsUtils.is_entity_defined_in_import(
+            imprt, SitesGroupImportActions.ENTITY_CODE
+        )
+
         # Problem with bounding box: the field doesn't have the same name between the transient table and the destination table
         # It  might be the problem
-        return SiteImportActions.compute_bounding_box(imprt)
+        if isSitesGroup:
+            return SitesGroupImportActions.compute_bounding_box(imprt)
+
+        else:
+            return SiteImportActions.compute_bounding_box(imprt)

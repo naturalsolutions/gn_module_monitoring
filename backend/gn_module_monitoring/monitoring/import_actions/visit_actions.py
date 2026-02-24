@@ -1,5 +1,14 @@
 from .entity_import_actions_utils import EntityImportActionsUtils
-from geonature.core.imports.checks.sql.parent import set_parent_line_no
+from geonature.utils.env import db
+
+from geonature.core.imports.models import TImports
+
+from geonature.core.imports.checks.sql.parent import (
+    set_parent_line_no,
+    check_no_parent_entity,
+    set_id_parent_from_destination,
+    check_erroneous_parent_entities,
+)
 
 from geonature.core.imports.checks.sql.extra import (
     check_entity_data_consistency,
@@ -7,28 +16,21 @@ from geonature.core.imports.checks.sql.extra import (
     generate_entity_id,
     generate_missing_uuid,
     generate_missing_uuid_for_id_origin,
+    check_duplicate_uuid,
+    check_existing_uuid,
     set_parent_id_from_line_no,
+    check_dates,
 )
 
-from geonature.core.imports.checks.sql import (
-    check_dates,
-    check_duplicate_uuid,
-    check_erroneous_parent_entities,
-    check_existing_uuid,
-    check_no_parent_entity,
-    set_id_parent_from_destination,
-    do_nomenclatures_mapping,
-)
+from geonature.core.imports.checks.sql.nomenclature import do_nomenclatures_mapping
+
 from geonature.core.imports.utils import (
     get_mapping_data,
     load_transient_data_in_dataframe,
     update_transient_data_from_dataframe,
 )
 
-from geonature.core.imports.models import Entity, TImports
-
 from geonature.core.imports.checks.dataframe.core import check_datasets, check_required_values
-from geonature.utils.env import db
 
 
 class VisitImportActions:
@@ -47,9 +49,7 @@ class VisitImportActions:
 
     @staticmethod
     def check_sql(imprt):
-        from gn_module_monitoring.monitoring.import_actions.site_actions import (
-            SiteImportActions,
-        )
+        from gn_module_monitoring.monitoring.import_actions.site_actions import SiteImportActions
 
         entity = EntityImportActionsUtils.get_entity(imprt, VisitImportActions.ENTITY_CODE)
         entity_fields, fieldmapped_fields, _ = get_mapping_data(imprt, entity)

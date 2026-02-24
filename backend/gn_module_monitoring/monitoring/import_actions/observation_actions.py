@@ -1,30 +1,30 @@
-from gn_module_monitoring.monitoring.import_actions.visit_actions import VisitImportActions
 from .entity_import_actions_utils import EntityImportActionsUtils
-from geonature.core.imports.checks.sql.parent import set_parent_line_no
+from geonature.utils.env import db
 
-from geonature.core.imports.models import Entity, TImports
+from geonature.core.imports.models import TImports
 
 from geonature.core.gn_monitoring.models import TObservations
-from geonature.utils.env import db
 import sqlalchemy as sa
 from flask import current_app
 
+from geonature.core.imports.checks.sql.parent import (
+    set_parent_line_no,
+    check_no_parent_entity,
+    set_id_parent_from_destination,
+    check_erroneous_parent_entities,
+)
+
 from geonature.core.imports.checks.sql.extra import (
-    check_entity_data_consistency,
     disable_duplicated_rows,
     generate_entity_id,
     generate_missing_uuid,
+    check_duplicate_uuid,
+    check_existing_uuid,
     set_parent_id_from_line_no,
 )
 
-from geonature.core.imports.checks.sql import (
-    check_duplicate_uuid,
-    check_erroneous_parent_entities,
-    check_existing_uuid,
-    check_no_parent_entity,
-    set_id_parent_from_destination,
-    do_nomenclatures_mapping,
-)
+from geonature.core.imports.checks.sql.nomenclature import do_nomenclatures_mapping
+
 from geonature.core.imports.utils import (
     get_mapping_data,
     load_transient_data_in_dataframe,
@@ -43,6 +43,8 @@ class ObservationImportActions:
 
     @staticmethod
     def check_sql(imprt):
+        from gn_module_monitoring.monitoring.import_actions.visit_actions import VisitImportActions
+
         entity = EntityImportActionsUtils.get_entity(imprt, ObservationImportActions.ENTITY_CODE)
         entity_fields, fieldmapped_fields, _ = get_mapping_data(imprt, entity)
 

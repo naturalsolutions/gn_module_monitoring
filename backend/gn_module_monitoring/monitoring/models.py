@@ -478,6 +478,8 @@ class TMonitoringSitesGroups(DB.Model, PermissionModel, SitesGroupsQuery):
         .scalar_subquery()
     )
 
+    id_import = DB.Column(DB.Integer, nullable=True)
+
     @hybrid_property
     def nb_visits(self):
         query = select(func.count(TMonitoringVisits.id_base_site)).where(
