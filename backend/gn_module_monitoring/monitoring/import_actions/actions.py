@@ -516,6 +516,5 @@ class MonitoringImportActions(ImportActions):
         # It  might be the problem
         if isSitesGroup:
             return SitesGroupImportActions.compute_bounding_box(imprt)
-
         else:
             return SiteImportActions.compute_bounding_box(imprt)
