@@ -51,7 +51,8 @@ def get_entity_parent(tree: dict, entity_code: str):
 
     def find_parent(node, target, parent=None):
         if target in node:
-            return parent
+            if not (target == "site" and "sites_group" in node):
+                return parent
         for key, value in node.items():
             if isinstance(value, dict):
                 found = find_parent(value, target, key)

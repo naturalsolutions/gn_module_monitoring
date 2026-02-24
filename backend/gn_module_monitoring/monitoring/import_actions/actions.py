@@ -132,6 +132,9 @@ class MonitoringImportActions(ImportActions):
         isSitesGroup = EntityImportActionsUtils.is_entity_defined_in_import(
             imprt, SitesGroupImportActions.ENTITY_CODE
         )
+        isSitesGroupMandatory = None
+        if isSitesGroup:
+            isSitesGroupMandatory = False if "site" in config["tree"]["module"] else True
         isVisit = EntityImportActionsUtils.is_entity_defined_in_import(
             imprt, VisitImportActions.ENTITY_CODE
         )
@@ -165,7 +168,7 @@ class MonitoringImportActions(ImportActions):
 
         if isSitesGroup:
             SitesGroupImportActions.check_sql(imprt)
-        SiteImportActions.check_sql(imprt, isSitesGroup)
+        SiteImportActions.check_sql(imprt, isSitesGroup, isSitesGroupMandatory)
         if isVisit:
             VisitImportActions.check_sql(imprt)
         if isObservation:
@@ -315,6 +318,7 @@ class MonitoringImportActions(ImportActions):
                     .where(transient_table.c[entity.validity_column] == True)
                 )
 
+            cor_sites_group_module_select = None
             if entity.code == "sites_group":
                 cor_sites_group_module_select = (
                     sa.select(
@@ -397,6 +401,17 @@ class MonitoringImportActions(ImportActions):
                         )
                         row_count += db.session.execute(core_insert_stmt).rowcount
 
+                        if cor_sites_group_module_select is not None:
+                            db.session.execute(
+                                sa.insert(cor_sites_group_module).from_select(
+                                    ["id_sites_group", "id_module"],
+                                    cor_sites_group_module_select.filter(
+                                        transient_table.c["line_no"] >= min_line_no,
+                                        transient_table.c["line_no"] < max_line_no,
+                                    ),
+                                )
+                            )
+
                         if complement_select_stmt is not None:
                             if entity.code == "site" and is_sites_group_id_fields:
                                 db.session.execute(
@@ -424,17 +439,6 @@ class MonitoringImportActions(ImportActions):
                                 sa.insert(cor_site_type).from_select(
                                     ["id_base_site", "id_type_site"],
                                     types_site_select_stmt.filter(
-                                        transient_table.c["line_no"] >= min_line_no,
-                                        transient_table.c["line_no"] < max_line_no,
-                                    ),
-                                )
-                            )
-
-                        if cor_sites_group_module_select is not None:
-                            db.session.execute(
-                                sa.insert(cor_sites_group_module).from_select(
-                                    ["id_sites_group", "id_module"],
-                                    cor_sites_group_module_select.filter(
                                         transient_table.c["line_no"] >= min_line_no,
                                         transient_table.c["line_no"] < max_line_no,
                                     ),
