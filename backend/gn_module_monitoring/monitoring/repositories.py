@@ -1,11 +1,12 @@
 from flask import current_app, g
 
-from sqlalchemy import select
-from sqlalchemy.sql import text
+from sqlalchemy import Table, func, select
 
 from geonature.utils.env import DB
 from geonature.utils.errors import GeoNatureError
 from geonature.core.gn_synthese.utils.process import import_from_table
+from geonature.core.gn_commons.models import TValidations
+from pypnnomenclature.models import TNomenclatures
 
 from gn_module_monitoring.monitoring.serializer import MonitoringObjectSerializer
 from gn_module_monitoring.utils.utils import to_int
@@ -13,6 +14,7 @@ from gn_module_monitoring.utils.routes import get_objet_with_permission_boolean
 from gn_module_monitoring.monitoring.models import PermissionModel, TMonitoringModules
 
 import logging
+from datetime import datetime
 from ..utils.utils import to_int
 from .base import monitoring_definitions
 from sqlalchemy.orm import joinedload
@@ -120,6 +122,103 @@ class MonitoringObject(MonitoringObjectSerializer):
         )
         return True
 
+    def create_synthese_validation_entries(self):
+        table_name = "v_synthese_{}".format(self._module_code.lower())
+        id_field_name = self.config_param("id_field_name")
+        id_value = self.config_value("id_field_name")
+        if not id_value:
+            return
+
+        view = Table(table_name, DB.metadata, schema="gn_monitoring", autoload_with=DB.engine)
+        id_col = getattr(view.c, id_field_name)
+
+        uuids = DB.session.execute(
+            select(view.c.unique_id_sinp).where(id_col == id_value)
+        ).scalars().all()
+        if not uuids:
+            return
+
+        status_id = DB.session.scalar(
+            select(
+                func.coalesce(
+                    select(TNomenclatures.id_nomenclature)
+                    .where(
+                        TNomenclatures.cd_nomenclature == "0",
+                        TNomenclatures.id_type
+                        == func.ref_nomenclatures.get_id_nomenclature_type("STATUT_VALID"),
+                    )
+                    .scalar_subquery(),
+                    func.gn_synthese.get_default_nomenclature_value("STATUT_VALID"),
+                )
+            )
+        )
+
+        row_number = func.row_number().over(
+            partition_by=TValidations.uuid_attached_row,
+            order_by=(
+                TValidations.validation_date.desc().nullslast(),
+                TValidations.id_validation.desc(),
+            ),
+        )
+
+        last_val_subq = (
+            select(
+                TValidations.id_validation,
+                TValidations.uuid_attached_row,
+                TValidations.validation_auto,
+                row_number.label("rn"),
+            )
+            .where(TValidations.uuid_attached_row.in_(uuids))
+            .subquery()
+        )
+
+        last_vals = DB.session.execute(
+            select(
+                last_val_subq.c.uuid_attached_row,
+                last_val_subq.c.id_validation,
+                last_val_subq.c.validation_auto,
+            ).where(last_val_subq.c.rn == 1)
+        ).all()
+
+        last_by_uuid = {row.uuid_attached_row: row for row in last_vals}
+
+        to_update_ids = []
+        to_insert_uuids = []
+        for uuid in uuids:
+            last_val = last_by_uuid.get(uuid)
+            if last_val and last_val.validation_auto is True:
+                to_update_ids.append(last_val.id_validation)
+            else:
+                to_insert_uuids.append(uuid)
+
+        now = datetime.utcnow()
+        comment = "Reinitialisation: Donnees modifiee depuis sa validation"
+
+        if to_update_ids:
+            validations = DB.session.scalars(
+                select(TValidations).where(TValidations.id_validation.in_(to_update_ids))
+            ).all()
+            for validation in validations:
+                validation.id_nomenclature_valid_status = status_id
+                validation.validation_comment = comment
+                validation.validation_date = now
+
+        if to_insert_uuids:
+            new_validations = [
+                TValidations(
+                    uuid_attached_row=uuid,
+                    id_nomenclature_valid_status=status_id,
+                    validation_auto=True,
+                    id_validator=None,
+                    validation_comment=comment,
+                    validation_date=now,
+                )
+                for uuid in to_insert_uuids
+            ]
+            DB.session.add_all(new_validations)
+
+        DB.session.commit()
+
     def create_or_update(self, post_data):
         try:
             # si id existe alors c'est un update
@@ -139,8 +238,12 @@ class MonitoringObject(MonitoringObjectSerializer):
             self._id = getattr(self._model, self.config_param("id_field_name"))
 
             # TODO module have synthese enabled
+            synthese_processed = False
             if not post_data["properties"]["id_module"] == "generic":
-                self.process_synthese()
+                synthese_processed = bool(self.process_synthese())
+
+            if synthese_processed and not b_creation:
+                self.create_synthese_validation_entries()
 
             return self
 
