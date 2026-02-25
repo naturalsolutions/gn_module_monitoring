@@ -1,12 +1,11 @@
 from flask import current_app, g
 
-from sqlalchemy import Table, func, select
+from sqlalchemy import select
+from sqlalchemy.sql import text
 
 from geonature.utils.env import DB
 from geonature.utils.errors import GeoNatureError
 from geonature.core.gn_synthese.utils.process import import_from_table
-from geonature.core.gn_commons.models import TValidations
-from pypnnomenclature.models import TNomenclatures
 
 from gn_module_monitoring.monitoring.serializer import MonitoringObjectSerializer
 from gn_module_monitoring.utils.utils import to_int
@@ -14,7 +13,6 @@ from gn_module_monitoring.utils.routes import get_objet_with_permission_boolean
 from gn_module_monitoring.monitoring.models import PermissionModel, TMonitoringModules
 
 import logging
-from datetime import datetime
 from ..utils.utils import to_int
 from .base import monitoring_definitions
 from sqlalchemy.orm import joinedload
@@ -129,94 +127,76 @@ class MonitoringObject(MonitoringObjectSerializer):
         if not id_value:
             return
 
-        view = Table(table_name, DB.metadata, schema="gn_monitoring", autoload_with=DB.engine)
-        id_col = getattr(view.c, id_field_name)
-
-        uuids = DB.session.execute(
-            select(view.c.unique_id_sinp).where(id_col == id_value)
-        ).scalars().all()
-        if not uuids:
-            return
-
-        status_id = DB.session.scalar(
-            select(
-                func.coalesce(
-                    select(TNomenclatures.id_nomenclature)
-                    .where(
-                        TNomenclatures.cd_nomenclature == "0",
-                        TNomenclatures.id_type
-                        == func.ref_nomenclatures.get_id_nomenclature_type("STATUT_VALID"),
-                    )
-                    .scalar_subquery(),
-                    func.gn_synthese.get_default_nomenclature_value("STATUT_VALID"),
-                )
+        sql_update = text(
+            f"""
+            UPDATE gn_commons.t_validations tv
+            SET
+                id_nomenclature_valid_status = COALESCE(
+                    (
+                        SELECT tn.id_nomenclature
+                        FROM ref_nomenclatures.t_nomenclatures tn
+                        WHERE tn.cd_nomenclature = '0'
+                          AND tn.id_type = ref_nomenclatures.get_id_nomenclature_type('STATUT_VALID')
+                    ),
+                    gn_synthese.get_default_nomenclature_value('STATUT_VALID')
+                ),
+                validation_comment = 'Reinitialisation: Donnees modifiee depuis sa validation',
+                validation_date = NOW()
+            WHERE tv.id_validation IN (
+                SELECT last_val.id_validation
+                FROM gn_monitoring.{table_name} v
+                JOIN LATERAL (
+                    SELECT tv2.id_validation, tv2.validation_auto
+                    FROM gn_commons.t_validations tv2
+                    WHERE tv2.uuid_attached_row = v.unique_id_sinp
+                    ORDER BY tv2.validation_date DESC NULLS LAST, tv2.id_validation DESC
+                    LIMIT 1
+                ) last_val ON TRUE
+                WHERE v.{id_field_name} = :id_value
+                  AND last_val.validation_auto = TRUE
             )
+            """
         )
+        DB.session.execute(sql_update, {"id_value": id_value})
 
-        row_number = func.row_number().over(
-            partition_by=TValidations.uuid_attached_row,
-            order_by=(
-                TValidations.validation_date.desc().nullslast(),
-                TValidations.id_validation.desc(),
-            ),
-        )
-
-        last_val_subq = (
-            select(
-                TValidations.id_validation,
-                TValidations.uuid_attached_row,
-                TValidations.validation_auto,
-                row_number.label("rn"),
+        sql_insert = text(
+            f"""
+            INSERT INTO gn_commons.t_validations (
+                uuid_attached_row,
+                id_nomenclature_valid_status,
+                validation_auto,
+                id_validator,
+                validation_comment,
+                validation_date
             )
-            .where(TValidations.uuid_attached_row.in_(uuids))
-            .subquery()
+            SELECT
+                v.unique_id_sinp,
+                COALESCE(
+                    (
+                        SELECT tn.id_nomenclature
+                        FROM ref_nomenclatures.t_nomenclatures tn
+                        WHERE tn.cd_nomenclature = '0'
+                          AND tn.id_type = ref_nomenclatures.get_id_nomenclature_type('STATUT_VALID')
+                    ),
+                    gn_synthese.get_default_nomenclature_value('STATUT_VALID')
+                ),
+                TRUE,
+                NULL,
+                'Reinitialisation: Donnees modifiee depuis sa validation',
+                NOW()
+            FROM gn_monitoring.{table_name} v
+            LEFT JOIN LATERAL (
+                SELECT tv.validation_auto
+                FROM gn_commons.t_validations tv
+                WHERE tv.uuid_attached_row = v.unique_id_sinp
+                ORDER BY tv.validation_date DESC NULLS LAST, tv.id_validation DESC
+                LIMIT 1
+            ) last_val ON TRUE
+            WHERE v.{id_field_name} = :id_value
+              AND (last_val.validation_auto IS DISTINCT FROM TRUE)
+            """
         )
-
-        last_vals = DB.session.execute(
-            select(
-                last_val_subq.c.uuid_attached_row,
-                last_val_subq.c.id_validation,
-                last_val_subq.c.validation_auto,
-            ).where(last_val_subq.c.rn == 1)
-        ).all()
-
-        last_by_uuid = {row.uuid_attached_row: row for row in last_vals}
-
-        to_update_ids = []
-        to_insert_uuids = []
-        for uuid in uuids:
-            last_val = last_by_uuid.get(uuid)
-            if last_val and last_val.validation_auto is True:
-                to_update_ids.append(last_val.id_validation)
-            else:
-                to_insert_uuids.append(uuid)
-
-        now = datetime.utcnow()
-        comment = "Reinitialisation: Donnees modifiee depuis sa validation"
-
-        if to_update_ids:
-            validations = DB.session.scalars(
-                select(TValidations).where(TValidations.id_validation.in_(to_update_ids))
-            ).all()
-            for validation in validations:
-                validation.id_nomenclature_valid_status = status_id
-                validation.validation_comment = comment
-                validation.validation_date = now
-
-        if to_insert_uuids:
-            new_validations = [
-                TValidations(
-                    uuid_attached_row=uuid,
-                    id_nomenclature_valid_status=status_id,
-                    validation_auto=True,
-                    id_validator=None,
-                    validation_comment=comment,
-                    validation_date=now,
-                )
-                for uuid in to_insert_uuids
-            ]
-            DB.session.add_all(new_validations)
-
+        DB.session.execute(sql_insert, {"id_value": id_value})
         DB.session.commit()
 
     def create_or_update(self, post_data):
