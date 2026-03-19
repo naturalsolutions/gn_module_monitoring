@@ -7,6 +7,8 @@ from geonature.utils.env import db
 from sqlalchemy import select
 
 from gn_module_monitoring.monitoring.models import TMonitoringModules
+from geonature.utils.env import db
+from sqlalchemy import select
 
 # Liste des clés de premier niveau retournée par la config d'un module
 CONFIG_KEYS = (

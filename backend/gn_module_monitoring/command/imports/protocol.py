@@ -70,8 +70,7 @@ def get_protocol_data(module_code: str, id_destination: int):
     entity_confs = {}
     # Ensure all confs are loaded in a dict
     for entity_code in entities:
-        file_path = module_config_dir_path / f"{entity_code}.json"
-        specific_data = json_from_file(file_path)
+        specific_data = config_module.get(entity_code, {})
         if entity_code == "site":
             for type_site_conf in type_site_confs:
                 if type_site_conf.get("config", None):
