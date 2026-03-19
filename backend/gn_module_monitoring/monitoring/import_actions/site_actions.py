@@ -43,7 +43,10 @@ class SiteImportActions:
     ALTITUDE_MIN_FIELD = "s__altitude_min"
     ALTITUDE_MAX_FIELD = "s__altitude_max"
     LINE_NO = "site_line_no"
+<<<<<<< HEAD
     ID_INVENTOR_FIELD = "s__id_inventor"
+=======
+>>>>>>> 0170e9f9 (Feat import: improve generate id behavior (#431))
 
     @staticmethod
     def check_sql(imprt: TImports):
@@ -74,12 +77,15 @@ class SiteImportActions:
                 imprt, entity, fieldmapped_fields.get(SiteImportActions.UUID_FIELD)
             )
 
+<<<<<<< HEAD
         if SiteImportActions.ID_ORIGIN_FIELD in fieldmapped_fields:
             generate_missing_uuid_for_id_origin(
                 imprt,
                 entity_fields.get(SiteImportActions.UUID_FIELD),
                 entity_fields.get(SiteImportActions.ID_ORIGIN_FIELD),
             )
+=======
+>>>>>>> 0170e9f9 (Feat import: improve generate id behavior (#431))
         generate_missing_uuid(
             imprt,
             entity,
@@ -87,6 +93,7 @@ class SiteImportActions:
             whereclause=None,
         )
 
+<<<<<<< HEAD
         if SiteImportActions.ID_ORIGIN_FIELD in fieldmapped_fields:
             disable_duplicated_rows(
                 imprt,
@@ -104,6 +111,8 @@ class SiteImportActions:
         if SiteImportActions.ID_INVENTOR_FIELD in fieldmapped_fields:
             map_observer_matching(imprt, entity, fieldmapped_fields["s__id_inventor"])
 
+=======
+>>>>>>> 0170e9f9 (Feat import: improve generate id behavior (#431))
         SiteImportActions.check_and_compute_geometries(imprt)
 
         SiteImportActions.check_altitudes(imprt)
@@ -152,8 +161,11 @@ class SiteImportActions:
                 geom_4326_field=entity_fields[geom_field_name__4326],
                 geom_local_field=entity_fields[geom_field_name__local],
                 wkt_field=entity_fields[geom_field_name__wkt],
+<<<<<<< HEAD
                 latitude_field=entity_fields["y"],
                 longitude_field=entity_fields["x"],
+=======
+>>>>>>> 0170e9f9 (Feat import: improve generate id behavior (#431))
             )
 
         update_transient_data_from_dataframe(imprt, entity, updated_cols, df)
