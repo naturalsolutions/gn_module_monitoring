@@ -149,9 +149,6 @@ et module_desc dans le fichier {module_config_dir_path}/module.json",
     # insert nomenclature
     add_nomenclature(module_code)
 
-    # Ajouter les destinations disponibles
-    process_module_import(module_data)
-
     source_data = {
         "name_source": "MONITORING_{}".format(module_code.upper()),
         "desc_source": "Données issues du module de suivi générique (sous-module: {})".format(
