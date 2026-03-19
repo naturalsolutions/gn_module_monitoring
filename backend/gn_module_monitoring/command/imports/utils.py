@@ -18,9 +18,7 @@ def destination_name(module_name: str):
 
 
 def ask_confirmation():
-    prompt = (
-        "\nVeuillez confirmer que vous souhaitez effectuer avec ces modifications ? [yes/no]: "
-    )
+    prompt = "\nVeuillez confirmer que vous souhaitez effectuer ces modifications ? [yes/no]: "
 
     response = input(prompt).strip().lower()
 
