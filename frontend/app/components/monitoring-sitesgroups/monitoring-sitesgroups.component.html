@@ -16,7 +16,7 @@
     [addChildren]="false"
   ></pnx-monitoring-form>
   <pnx-monitoring-datatable-g
-    *ngIf="!bEdit && obj.bIsInitialized"
+    *ngIf="!bEdit"
     [dataTableConfig]="dataTableConfig"
     [dataTableObjData]="dataTableObjData"
     [rows]="siteResolvedProperties"
