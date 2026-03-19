@@ -117,6 +117,8 @@ class SiteImportActions:
 
         SiteImportActions.check_altitudes(imprt)
 
+        map_observer_matching(imprt, entity, fieldmapped_fields["s__id_inventor"])
+
     @staticmethod
     def check_dataframe(imprt: TImports, config):
         """
