@@ -9,7 +9,6 @@ from geonature.core.imports.checks.sql.extra import (
     generate_missing_uuid_for_id_origin,
     set_parent_id_from_line_no,
 )
-from geonature.core.imports.checks.sql.core import update_rows_validity
 
 from geonature.core.imports.checks.sql import (
     check_dates,
