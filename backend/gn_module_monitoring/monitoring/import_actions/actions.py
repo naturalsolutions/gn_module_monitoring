@@ -240,6 +240,7 @@ class MonitoringImportActions(ImportActions):
                 .where(transient_table.c[entity.validity_column] == True)
                 .order_by(transient_table.c.line_no)
             )
+            print(core_select_stmt)
 
             # IF NO ENTITY to INSERT continue
             count_entity_to_import = db.session.scalar(
