@@ -110,51 +110,6 @@ class SiteImportActions:
                 entity_fields.get(SiteImportActions.ID_ORIGIN_FIELD),
             )
 
-<<<<<<< HEAD
-        if SiteImportActions.ID_ORIGIN_FIELD in fieldmapped_fields:
-            disable_duplicated_rows(
-                imprt,
-                entity,
-                fieldmapped_fields,
-                entity_fields.get(SiteImportActions.ID_ORIGIN_FIELD),
-            )
-
-        SiteImportActions.check_and_compute_geometries(imprt)
-
-        SiteImportActions.check_altitudes(imprt)
-
-        do_nomenclatures_mapping(imprt, entity, fieldmapped_fields, fill_with_defaults=False)
-
-        ## process parent uuid and id only if the module accepts sites groups
-
-        if isSitesGroups:
-            set_id_parent_from_destination(
-                imprt,
-                parent_entity=entity.parent,
-                entity=entity,
-                id_field=entity_fields.get(SitesGroupImportActions.ID_FIELD),
-                fields=[
-                    entity_fields.get(SitesGroupImportActions.UUID_FIELD),
-                ],
-            )
-
-            # Wire parent child
-            set_parent_line_no(
-                imprt,
-                parent_entity=entity.parent,
-                entity=entity,
-                parent_line_no=SitesGroupImportActions.LINE_NO,
-                fields=[
-                    entity_fields.get(SitesGroupImportActions.ID_ORIGIN_FIELD),
-                    entity_fields.get(SitesGroupImportActions.UUID_FIELD),
-                ],
-            )
-
-        if SiteImportActions.ID_INVENTOR_FIELD in fieldmapped_fields:
-            map_observer_matching(imprt, entity, fieldmapped_fields["s__id_inventor"])
-
-=======
->>>>>>> 0170e9f9 (Feat import: improve generate id behavior (#431))
         SiteImportActions.check_and_compute_geometries(imprt)
 
         SiteImportActions.check_altitudes(imprt)
@@ -362,9 +317,7 @@ class SiteImportActions:
         entity_sites_group = EntityImportActionsUtils.get_entity(
             imprt, SitesGroupImportActions.ENTITY_CODE
         )
-        if (
-            isSitesGroupMandatory
-        ):  # FIXME : idéalement vérifier chaque ligne pour appliquer la vérification uniquement en cas de présence d'un id_parent
+        if isSitesGroupMandatory:
             check_no_parent_entity(
                 imprt,
                 parent_entity=entity_sites_group,
