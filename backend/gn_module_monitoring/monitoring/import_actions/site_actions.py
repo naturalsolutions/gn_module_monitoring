@@ -104,6 +104,10 @@ class SiteImportActions:
         if SiteImportActions.ID_INVENTOR_FIELD in fieldmapped_fields:
             map_observer_matching(imprt, entity, fieldmapped_fields["s__id_inventor"])
 
+        SiteImportActions.check_and_compute_geometries(imprt)
+
+        SiteImportActions.check_altitudes(imprt)
+
     @staticmethod
     def check_dataframe(imprt: TImports, config):
         """
@@ -215,6 +219,30 @@ class SiteImportActions:
                 SiteImportActions.GEOMETRY_FIELD
             ),
             child_entity_code=deepest_child_entity_code,
+        )
+
+    @staticmethod
+    def check_and_compute_geometries(imprt: TImports):
+        entity_site = EntityImportActionsUtils.get_entity(imprt, SiteImportActions.ENTITY_CODE)
+        fields, _, _ = get_mapping_data(imprt, entity_site)
+
+        convert_geom_columns(
+            imprt,
+            entity_site,
+            geom_4326_field=fields[SiteImportActions.GEOMETRY_4326_FIELD],
+            geom_local_field=fields[SiteImportActions.GEOMETRY_LOCAL_FIELD],
+        )
+
+    @staticmethod
+    def check_altitudes(imprt: TImports):
+        entity_site = EntityImportActionsUtils.get_entity(imprt, SiteImportActions.ENTITY_CODE)
+        fields, _, _ = get_mapping_data(imprt, entity_site)
+
+        check_altitudes(
+            imprt,
+            entity_site,
+            fields[SiteImportActions.ALTITUDE_MIN_FIELD],
+            fields[SiteImportActions.ALTITUDE_MAX_FIELD],
         )
 
     @staticmethod
