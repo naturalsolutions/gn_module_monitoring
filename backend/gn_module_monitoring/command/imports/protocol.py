@@ -272,7 +272,7 @@ def get_protocol_data(module_code: str, id_destination: int):
             ]
         )
 
-    # Add observation_detail the file exists
+    # Add observation_detail if the file exists
     if "observation_detail" in entities:
         observation_detail_specific_path = module_config_dir_path / "observation_detail.json"
         observation_detail_generic_path = os.path.join(

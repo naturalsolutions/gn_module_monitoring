@@ -41,7 +41,6 @@ class SitesGroupImportActions:
     ALTITUDE_MIN_FIELD = "g__altitude_min"
     ALTITUDE_MAX_FIELD = "g__altitude_max"
     LINE_NO = "sites_group_line_no"
-    # ID_INVENTOR_FIELD = "g__id_inventor"
 
     @staticmethod
     def check_sql(imprt: TImports):
@@ -98,9 +97,6 @@ class SitesGroupImportActions:
         SitesGroupImportActions.check_altitudes(imprt)
 
         do_nomenclatures_mapping(imprt, entity, fieldmapped_fields, fill_with_defaults=False)
-
-        # if SitesGroupImportActions.ID_INVENTOR_FIELD in fieldmapped_fields:
-        #     map_observer_matching(imprt, entity, fieldmapped_fields["g__id_inventor"])
 
     @staticmethod
     def check_dataframe(imprt: TImports, config):
