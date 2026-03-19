@@ -191,12 +191,10 @@ class SiteImportActions:
                     entity_fields.get(SitesGroupImportActions.UUID_FIELD),
                 ],
             )
+            SiteImportActions.check_parent_validity(imprt)
 
         if SiteImportActions.ID_INVENTOR_FIELD in fieldmapped_fields:
             map_observer_matching(imprt, entity, fieldmapped_fields["s__id_inventor"])
-
-        if isSitesGroups:
-            SiteImportActions.check_parent_validity(imprt)
 
     @staticmethod
     def check_dataframe(imprt: TImports, config):
