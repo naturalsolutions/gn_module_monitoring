@@ -131,24 +131,6 @@ export class MonitoringListComponent implements OnInit {
     return nb == nbSelected ? `(${nb})` : `(${nbSelected}/${nb})`;
   }
 
-  getImportQueryParams() {
-    if ('observation' in this.obj.children) {
-      return {
-        uuid_base_site: this.obj.properties['uuid_base_site'], // todo: is it useful ?
-        uuid_base_visit: this.obj.properties['uuid_base_visit'],
-      };
-    }
-    if ('visit' in this.obj.children) {
-      return {
-        uuid_base_site: this.obj.properties['uuid_base_site'],
-      };
-    }
-    if ('site' in this.obj.children) {
-      return {};
-    }
-    return {};
-  }
-
   ngOnChanges(changes: SimpleChanges) {
     for (const propName of Object.keys(changes)) {
       const chng = changes[propName];
