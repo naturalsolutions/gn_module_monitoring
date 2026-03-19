@@ -38,9 +38,9 @@ def get_entities_protocol(module_code: str) -> list:
         "site",
         "visit",
         "observation",
-        "observation_detail",
-        # "individual", # Pas encore géré par l'import
-        # "marking", # Pas encore géré par l'import
+        "observation_detail",  # Pas encore géré par l'import
+        "individual",  # Pas encore géré par l'import
+        "marking",  # Pas encore géré par l'import
     ]
 
     module_path = monitoring_module_config_path(module_code)
