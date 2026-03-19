@@ -60,7 +60,7 @@ class SiteImportActions:
 >>>>>>> 0170e9f9 (Feat import: improve generate id behavior (#431))
 
     @staticmethod
-    def check_sql(imprt: TImports, isSitesGroups):
+    def check_sql(imprt: TImports, isSitesGroups, isSitesGroupMandatory):
         from gn_module_monitoring.monitoring.import_actions.sites_group_actions import (
             SitesGroupImportActions,
         )
@@ -191,7 +191,7 @@ class SiteImportActions:
                     entity_fields.get(SitesGroupImportActions.UUID_FIELD),
                 ],
             )
-            SiteImportActions.check_parent_validity(imprt)
+            SiteImportActions.check_parent_validity(imprt, isSitesGroupMandatory)
 
         if SiteImportActions.ID_INVENTOR_FIELD in fieldmapped_fields:
             map_observer_matching(imprt, entity, fieldmapped_fields["s__id_inventor"])
@@ -362,7 +362,7 @@ class SiteImportActions:
         )
 
     @staticmethod
-    def check_parent_validity(imprt: TImports):
+    def check_parent_validity(imprt: TImports, isSitesGroupMandatory: bool):
         from gn_module_monitoring.monitoring.import_actions.sites_group_actions import (
             SitesGroupImportActions,
         )
@@ -371,8 +371,9 @@ class SiteImportActions:
         entity_sites_group = EntityImportActionsUtils.get_entity(
             imprt, SitesGroupImportActions.ENTITY_CODE
         )
-
-        if SitesGroupImportActions.ID_FIELD:  # FIXME
+        if (
+            isSitesGroupMandatory
+        ):  # FIXME : idéalement vérifier chaque ligne pour appliquer la vérification uniquement en cas de présence d'un id_parent
             check_no_parent_entity(
                 imprt,
                 parent_entity=entity_sites_group,
