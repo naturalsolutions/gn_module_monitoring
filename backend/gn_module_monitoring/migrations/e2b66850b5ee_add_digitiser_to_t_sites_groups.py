@@ -41,8 +41,10 @@ def upgrade():
 
 
 def downgrade():
-    statement = sa.text(f"""
+    statement = sa.text(
+        f"""
         ALTER TABLE {monitorings_schema}.{table} DROP CONSTRAINT fk_{table}_{column};
-        """)
+        """
+    )
     op.execute(statement)
     op.drop_column(table, column, schema=monitorings_schema)

@@ -17,16 +17,20 @@ depends_on = None
 
 
 def upgrade():
-    op.execute("""
+    op.execute(
+        """
         UPDATE gn_commons.t_modules AS tm SET type='monitoring_module'
         FROM gn_monitoring.t_module_complements AS tmc
         WHERE tm.id_module = tmc.id_module;
-    """)
+    """
+    )
 
 
 def downgrade():
-    op.execute("""
+    op.execute(
+        """
         UPDATE gn_commons.t_modules AS tm SET type=''
         FROM gn_monitoring.t_module_complements AS tmc
         WHERE tm.id_module = tmc.id_module;
-    """)
+    """
+    )
