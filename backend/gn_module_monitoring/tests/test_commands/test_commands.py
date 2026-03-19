@@ -6,6 +6,7 @@ from sqlalchemy import select
 
 from geonature.utils.env import DB
 from geonature.core.imports.models import BibFields, Destination
+from geonature.core.imports.models import BibFields, Destination
 
 from gn_module_monitoring.command.cmd import (
     cmd_remove_monitoring_module_cmd,
@@ -16,7 +17,13 @@ from gn_module_monitoring.command.cmd import (
     cmd_add_update_import_on_protocole,
 )
 from gn_module_monitoring.command.imports.protocol import get_protocol_data
+from gn_module_monitoring.command.imports.protocol import get_protocol_data
 from gn_module_monitoring.monitoring.models import TMonitoringModules
+from gn_module_monitoring.command.imports.entity import (
+    insert_entities,
+    insert_entity_field_relations,
+)
+from gn_module_monitoring.command.imports.fields import delete_bib_fields, insert_bib_field
 from gn_module_monitoring.command.imports.entity import (
     insert_entities,
     insert_entity_field_relations,

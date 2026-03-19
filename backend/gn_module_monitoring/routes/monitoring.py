@@ -24,6 +24,7 @@ from geonature.core.gn_permissions.decorators import check_cruved_scope
 from geonature.core.gn_commons.models.base import TModules
 from geonature.core.gn_permissions.models import TObjects
 from geonature.core.imports.models import Destination
+from geonature.core.imports.models import Destination
 
 from geonature.utils.env import DB, ROOT_DIR
 import geonature.utils.filemanager as fm

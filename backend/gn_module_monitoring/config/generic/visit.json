@@ -25,10 +25,12 @@
   "generic": {
     "id_base_visit": {
       "type_widget": "number",
+      "type_widget": "number",
       "attribut_label": "ID",
       "hidden": true
     },
     "id_base_site": {
+      "type_widget": "number",
       "type_widget": "number",
       "attribut_label": "ID SITE",
       "hidden": true

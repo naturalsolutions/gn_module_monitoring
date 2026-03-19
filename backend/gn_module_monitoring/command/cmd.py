@@ -102,8 +102,6 @@ def cmd_install_monitoring_module(module_code):
 
     click.secho(f"Installation du sous-module monitoring {module_code}")
 
-    click.secho(f"Installation du sous-module monitoring {module_code}")
-
     # process Synthese
     process_sql_files(dir=None, module_code=module_code, depth=1)
     # process Exports
