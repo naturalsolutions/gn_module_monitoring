@@ -200,6 +200,7 @@ class SitesGroupImportActions:
 
         # Problem with bounding box: the field doesn't have the same name between the transient table and the destination table
         # It  might be the problem
+
         # TMonitoringSites which has a foreign key with TMonitoringSitesGroups isn't part of GeoNature core
         # thus can't be called from core function compute_bounding_box(). We aggregate two boxes instead.
         sites_group_bounding_box = compute_bounding_box(
@@ -212,9 +213,7 @@ class SitesGroupImportActions:
         )
         children_bounding_box = SiteImportActions.compute_bounding_box(imprt)
 
-        if not children_bounding_box or not sites_group_bounding_box:
-            return children_bounding_box or sites_group_bounding_box
-        elif sites_group_bounding_box and children_bounding_box:
+        if sites_group_bounding_box and children_bounding_box:
             return geojson.Polygon(
                 get_bounding_box(
                     list(
@@ -226,6 +225,8 @@ class SitesGroupImportActions:
                     )
                 )
             )
+
+        return sites_group_bounding_box or children_bounding_box
 
     @staticmethod
     def check_and_compute_geometries(imprt: TImports):
