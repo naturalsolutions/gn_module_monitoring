@@ -153,6 +153,17 @@ class MonitoringImportActions(ImportActions):
         if isObservation:
             ObservationImportActions.check_sql(imprt)
 
+        # for entity in ("site", "visit"):  # v_observers pour les visite .....
+        #     observer_field = db.session.scalar(
+        #         sa.select(BibFields).where(
+        #             BibFields.name_field == f"{entity[0]}__id_inventor",
+        #             BibFields.id_destination == imprt.id_destination,
+        #         )
+        #     )
+        #     ImportActions.bind_matched_observers_without_correspondance_table(
+        #         imprt, observer_field
+        #     )
+
     @staticmethod
     def import_data_to_destination(imprt: TImports) -> None:
         isVisit = EntityImportActionsUtils.is_entity_defined_in_import(
