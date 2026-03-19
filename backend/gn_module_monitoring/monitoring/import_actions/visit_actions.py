@@ -99,6 +99,8 @@ class VisitImportActions:
 
         do_nomenclatures_mapping(imprt, entity, fieldmapped_fields, fill_with_defaults=False)
 
+        do_nomenclatures_mapping(imprt, entity, fieldmapped_fields, fill_with_defaults=False)
+
         ## process parent uuid and id
         set_id_parent_from_destination(
             imprt,

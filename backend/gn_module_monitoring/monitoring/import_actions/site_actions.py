@@ -117,6 +117,8 @@ class SiteImportActions:
 
         SiteImportActions.check_altitudes(imprt)
 
+        do_nomenclatures_mapping(imprt, entity, fieldmapped_fields, fill_with_defaults=False)
+
         if SiteImportActions.ID_INVENTOR_FIELD in fieldmapped_fields:
             map_observer_matching(imprt, entity, fieldmapped_fields["s__id_inventor"])
 

@@ -7,6 +7,7 @@ from geonature.core.imports.models import TImports
 from geonature.core.gn_monitoring.models import TObservations
 from geonature.utils.env import db
 import sqlalchemy as sa
+from flask import current_app
 
 from geonature.core.imports.checks.sql.extra import (
     disable_duplicated_rows,
