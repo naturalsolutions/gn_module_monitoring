@@ -20,7 +20,7 @@
     "comments",
     "dataset",
     "nb_observations"
-  ], 
+  ],
   "sorts": [{ "prop": "visit_date_min", "dir": "desc" }],
   "generic": {
     "id_base_visit": {
@@ -45,7 +45,7 @@
       "code_list": "CODE_OBSERVERS_LIST",
       "multi_select": true,
       "hidden": false,
-      "required": true  
+      "required": true
     },
     "observers_txt": {
       "type_widget": "observers-text",
