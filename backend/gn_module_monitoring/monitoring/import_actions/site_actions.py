@@ -1,23 +1,31 @@
 from flask import current_app
 from .entity_import_actions_utils import EntityImportActionsUtils
+from geonature.utils.env import db
 
 from geonature.core.imports.models import TImports
+
+from geonature.core.imports.checks.sql.parent import (
+    set_parent_line_no,
+    check_no_parent_entity,
+    set_id_parent_from_destination,
+    check_erroneous_parent_entities,
+)
 
 from geonature.core.imports.checks.sql.extra import (
     check_entity_data_consistency,
     disable_duplicated_rows,
     generate_entity_id,
     generate_missing_uuid,
-)
-
-from geonature.core.imports.checks.sql import (
-    check_altitudes,
+    generate_missing_uuid_for_id_origin,
     check_duplicate_uuid,
     check_existing_uuid,
-    convert_geom_columns,
-    do_nomenclatures_mapping,
-    generate_missing_uuid_for_id_origin,
+    check_altitudes,
+    set_parent_id_from_line_no,
 )
+
+from geonature.core.imports.checks.sql.geo import convert_geom_columns
+from geonature.core.imports.checks.sql.nomenclature import do_nomenclatures_mapping
+
 from geonature.core.imports.utils import (
     get_mapping_data,
     load_transient_data_in_dataframe,
@@ -42,11 +50,18 @@ class SiteImportActions:
     GEOMETRY_LOCAL_FIELD = "s__geom_local"
     ALTITUDE_MIN_FIELD = "s__altitude_min"
     ALTITUDE_MAX_FIELD = "s__altitude_max"
+    PARENT_ID_FIELD = "id_sites_group"
+    PARENT_UUID_FIELD = "uuid_sites_group"
+    PARENT_LINE_NO = "sites_group_line_no"
     LINE_NO = "site_line_no"
     ID_INVENTOR_FIELD = "s__id_inventor"
 
     @staticmethod
-    def check_sql(imprt: TImports):
+    def check_sql(imprt: TImports, isSitesGroups):
+        from gn_module_monitoring.monitoring.import_actions.sites_group_actions import (
+            SitesGroupImportActions,
+        )
+
         entity = EntityImportActionsUtils.get_entity(imprt, SiteImportActions.ENTITY_CODE)
         entity_fields, fieldmapped_fields, _ = get_mapping_data(imprt, entity)
 
@@ -95,14 +110,87 @@ class SiteImportActions:
                 entity_fields.get(SiteImportActions.ID_ORIGIN_FIELD),
             )
 
+<<<<<<< HEAD
+        if SiteImportActions.ID_ORIGIN_FIELD in fieldmapped_fields:
+            disable_duplicated_rows(
+                imprt,
+                entity,
+                fieldmapped_fields,
+                entity_fields.get(SiteImportActions.ID_ORIGIN_FIELD),
+            )
+
         SiteImportActions.check_and_compute_geometries(imprt)
 
         SiteImportActions.check_altitudes(imprt)
 
         do_nomenclatures_mapping(imprt, entity, fieldmapped_fields, fill_with_defaults=False)
 
+        ## process parent uuid and id only if the module accepts sites groups
+
+        if isSitesGroups:
+            set_id_parent_from_destination(
+                imprt,
+                parent_entity=entity.parent,
+                entity=entity,
+                id_field=entity_fields.get(SitesGroupImportActions.ID_FIELD),
+                fields=[
+                    entity_fields.get(SitesGroupImportActions.UUID_FIELD),
+                ],
+            )
+
+            # Wire parent child
+            set_parent_line_no(
+                imprt,
+                parent_entity=entity.parent,
+                entity=entity,
+                parent_line_no=SitesGroupImportActions.LINE_NO,
+                fields=[
+                    entity_fields.get(SitesGroupImportActions.ID_ORIGIN_FIELD),
+                    entity_fields.get(SitesGroupImportActions.UUID_FIELD),
+                ],
+            )
+
         if SiteImportActions.ID_INVENTOR_FIELD in fieldmapped_fields:
             map_observer_matching(imprt, entity, fieldmapped_fields["s__id_inventor"])
+
+=======
+>>>>>>> 0170e9f9 (Feat import: improve generate id behavior (#431))
+        SiteImportActions.check_and_compute_geometries(imprt)
+
+        SiteImportActions.check_altitudes(imprt)
+
+        do_nomenclatures_mapping(imprt, entity, fieldmapped_fields, fill_with_defaults=False)
+
+        ## process parent uuid and id only if the module accepts sites groups
+
+        if isSitesGroups:
+            set_id_parent_from_destination(
+                imprt,
+                parent_entity=entity.parent,
+                entity=entity,
+                id_field=entity_fields.get(SitesGroupImportActions.ID_FIELD),
+                fields=[
+                    entity_fields.get(SitesGroupImportActions.UUID_FIELD),
+                ],
+            )
+
+            # Wire parent child
+            set_parent_line_no(
+                imprt,
+                parent_entity=entity.parent,
+                entity=entity,
+                parent_line_no=SitesGroupImportActions.LINE_NO,
+                fields=[
+                    entity_fields.get(SitesGroupImportActions.ID_ORIGIN_FIELD),
+                    entity_fields.get(SitesGroupImportActions.UUID_FIELD),
+                ],
+            )
+
+        if SiteImportActions.ID_INVENTOR_FIELD in fieldmapped_fields:
+            map_observer_matching(imprt, entity, fieldmapped_fields["s__id_inventor"])
+
+        if isSitesGroups:
+            SiteImportActions.check_parent_validity(imprt)
 
     @staticmethod
     def check_dataframe(imprt: TImports, config):
@@ -164,6 +252,31 @@ class SiteImportActions:
             "t_base_sites",
             "uuid_base_site",
             "id_base_site",
+        )
+
+    @staticmethod
+    def set_parent_id_from_line_no(imprt: TImports):
+        from gn_module_monitoring.monitoring.import_actions.sites_group_actions import (
+            SitesGroupImportActions,
+        )
+        import sqlalchemy as sa
+
+        transient_table = imprt.destination.get_transient_table()
+        entity = EntityImportActionsUtils.get_entity(imprt, SiteImportActions.ENTITY_CODE)
+        print(
+            db.session.execute(
+                sa.select(
+                    transient_table.c.sites_group_line_no,
+                    transient_table.c.site_line_no,
+                    transient_table.c.id_base_site,
+                ).where(transient_table.c.id_import == imprt.id_import)
+            )
+        )
+        set_parent_id_from_line_no(
+            imprt,
+            entity=entity,
+            parent_line_no_field_name=SitesGroupImportActions.LINE_NO,
+            parent_id_field_name=SitesGroupImportActions.ID_FIELD,
         )
 
     @staticmethod
@@ -239,4 +352,31 @@ class SiteImportActions:
             entity_site,
             fields[SiteImportActions.ALTITUDE_MIN_FIELD],
             fields[SiteImportActions.ALTITUDE_MAX_FIELD],
+        )
+
+    @staticmethod
+    def check_parent_validity(imprt: TImports):
+        from gn_module_monitoring.monitoring.import_actions.sites_group_actions import (
+            SitesGroupImportActions,
+        )
+
+        entity_site = EntityImportActionsUtils.get_entity(imprt, SiteImportActions.ENTITY_CODE)
+        entity_sites_group = EntityImportActionsUtils.get_entity(
+            imprt, SitesGroupImportActions.ENTITY_CODE
+        )
+
+        if SitesGroupImportActions.ID_FIELD:  # FIXME
+            check_no_parent_entity(
+                imprt,
+                parent_entity=entity_sites_group,
+                entity=entity_site,
+                id_parent=SitesGroupImportActions.ID_FIELD,
+                parent_line_no=SitesGroupImportActions.LINE_NO,
+            )
+
+        check_erroneous_parent_entities(
+            imprt,
+            parent_entity=entity_sites_group,
+            entity=entity_site,
+            parent_line_no=SitesGroupImportActions.LINE_NO,
         )
