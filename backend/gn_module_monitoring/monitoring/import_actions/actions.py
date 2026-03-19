@@ -361,19 +361,16 @@ class MonitoringImportActions(ImportActions):
                             )
                         )
 
-                        if types_site_select_stmt is not None:
-                            db.session.execute(
-                                sa.insert(cor_site_type).from_select(
-                                    ["id_base_site", "id_type_site"],
-                                    types_site_select_stmt.filter(
-                                        transient_table.c["line_no"] >= min_line_no,
-                                        transient_table.c["line_no"] < max_line_no,
-                                    ),
-                                )
+                    if types_site_select_stmt is not None:
+                        db.session.execute(
+                            sa.insert(cor_site_type).from_select(
+                                ["id_base_site", "id_type_site"],
+                                types_site_select_stmt.filter(
+                                    transient_table.c["line_no"] >= min_line_no,
+                                    transient_table.c["line_no"] < max_line_no,
+                                ),
                             )
-                    except Exception as e:
-                        print(e)
-                        pass  # entity has no data to import
+                        )
 
                 yield (batch + 1) / batch_count
             imprt.statistics.update({f"{entity.code}_count": row_count})
