@@ -17,30 +17,22 @@ depends_on = None
 
 
 def upgrade():
-    op.execute(
-        """
+    op.execute("""
         INSERT INTO gn_permissions.t_objects (code_object, description_object)
         VALUES ('MONITORINGS_INDIVIDUALS', 'Permissions sur les individus'),
         ('MONITORINGS_MARKINGS', 'Permissions sur les marquages');
-        """
-    )
+        """)
 
 
 def downgrade():
-    op.execute(
-        """
+    op.execute("""
         DELETE FROM gn_permissions.t_permissions WHERE id_object in 
             (SELECT id_object FROM gn_permissions.t_objects WHERE code_object in ('MONITORINGS_INDIVIDUALS', 'MONITORINGS_MARKINGS'))
-        """
-    )
-    op.execute(
-        """
+        """)
+    op.execute("""
         DELETE FROM gn_permissions.t_permissions_available WHERE id_object in 
             (SELECT id_object FROM gn_permissions.t_objects WHERE code_object in ('MONITORINGS_INDIVIDUALS', 'MONITORINGS_MARKINGS'))
-        """
-    )
-    op.execute(
-        """
+        """)
+    op.execute("""
         DELETE FROM gn_permissions.t_objects where code_object in ('MONITORINGS_INDIVIDUALS', 'MONITORINGS_MARKINGS');
-        """
-    )
+        """)
