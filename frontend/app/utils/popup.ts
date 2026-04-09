@@ -32,7 +32,7 @@ export class Popup {
 
     const popup = `
     <div>
-      <h4>  <a href=${fullurl}${url_params}>${feature.properties[fieldName]}</a></h4>
+      <h4>  <a href=${fullurl}${url_params}>${feature.properties[fieldName] || feature.properties[fieldId]}</a></h4>
       ${feature.properties['description'] || ''}
     </div>
     `;
