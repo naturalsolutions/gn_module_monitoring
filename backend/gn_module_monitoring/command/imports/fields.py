@@ -218,8 +218,8 @@ def monitoring_field_to_bib_field(
     )  # If a field is potentially hidden, the default value is false to not hide it if the expression cannot be evaluated
 
     required_value = get_bool(
-        field_data.get("required", False), True
-    )  # If a field is potentially required, the default value is true to not hide it if the expression cannot be evaluated
+        field_data.get("required", False), False
+    )  # If a field is potentially required but has a non-boolean value (e.g. Javascript expression), the field is not mandatory
 
     # if a field is hidden, we consider that it is not required since the user cannot fill it
     required_value = required_value and not hidden_value
