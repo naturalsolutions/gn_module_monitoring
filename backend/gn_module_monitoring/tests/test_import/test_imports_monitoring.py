@@ -6,13 +6,14 @@ from apptax.taxonomie.models import BibListes
 from flask import current_app, g
 from geonature.core.gn_commons.models import TModules
 from geonature.core.gn_monitoring.models import TBaseSites, TBaseVisits, TObservations
-from geonature.core.imports.models import BibFields, Destination
+from geonature.core.imports.models import BibFields, Destination, Entity
 from geonature.tests.imports.utils import assert_import_errors
 from geonature.utils.env import db
 from pypnusershub.db.models import UserList
 
 from gn_module_monitoring.command.cmd import cmd_add_update_import_on_protocole
 from gn_module_monitoring.monitoring.models import TMonitoringModules
+from gn_module_monitoring.command.imports.protocol import update_protocol
 
 occhab = pytest.importorskip("gn_module_occhab")
 
@@ -235,3 +236,26 @@ class TestImportMonitoring:
             )
             == imported_import.statistics["observation_count"]
         )
+
+    def test_update_module_label(self, import_destination, module_code):
+        new_label = "test_change"
+        module_data = {"module": {"module_label": new_label}}
+
+        update_protocol(module_data, module_code, [], update_label_only=True)
+        destination = db.session.execute(
+            sa.select(Destination).where(
+                Destination.module.has(TModules.module_code == module_code)
+            )
+        ).scalar_one()
+
+        assert destination.label == f"Monitoring - {new_label}"
+
+        entities = (
+            db.session.execute(
+                sa.select(Entity).where(Entity.id_destination == destination.id_destination)
+            )
+            .scalars()
+            .all()
+        )
+        for entity in entities:
+            assert entity.label == new_label
