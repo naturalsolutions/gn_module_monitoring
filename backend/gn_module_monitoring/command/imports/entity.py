@@ -53,13 +53,7 @@ def get_entities_protocol(module_code: str) -> list:
     keys = extract_keys(tree)
     unique_keys = [key for key in list(dict.fromkeys(keys)) if key not in ENTITIES_NOT_AVAILABLE]
 
-    unique_keys_ordered = []
-    for entity in entities_order:
-        for unique_key in unique_keys:
-            if unique_key == entity:
-                unique_keys_ordered.append(unique_key)
-
-    return unique_keys_ordered
+    return [entity for entity in entities_order if entity in unique_keys]
 
 
 def get_entity_parent(tree: dict, entity_code: str):

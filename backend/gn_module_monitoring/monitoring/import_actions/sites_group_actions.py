@@ -40,36 +40,32 @@ class SitesGroupImportActions:
     GEOMETRY_LOCAL_FIELD = "g__geom_local"
     ALTITUDE_MIN_FIELD = "g__altitude_min"
     ALTITUDE_MAX_FIELD = "g__altitude_max"
-    LINE_NO = "sites_group_line_no"
 
     @staticmethod
     def check_sql(imprt: TImports):
         entity = EntityImportActionsUtils.get_entity(imprt, SitesGroupImportActions.ENTITY_CODE)
         entity_fields, fieldmapped_fields, _ = get_mapping_data(imprt, entity)
 
-        # Check existing uuid
         if SitesGroupImportActions.UUID_FIELD in fieldmapped_fields:
+            uuid_field = fieldmapped_fields.get(SitesGroupImportActions.UUID_FIELD)
+            # Check existing uuid
             check_existing_uuid(
                 imprt,
                 entity,
-                fieldmapped_fields.get(SitesGroupImportActions.UUID_FIELD),
+                uuid_field,
                 skip=True,  # TODO config
             )
 
-        # Disable duplicated definition row
-        if SitesGroupImportActions.UUID_FIELD in fieldmapped_fields:
+            # Disable duplicated definition row
             disable_duplicated_rows(
                 imprt,
                 entity,
                 fieldmapped_fields,
-                fieldmapped_fields.get(SitesGroupImportActions.UUID_FIELD),
+                uuid_field,
             )
 
-        # Check duplicate uuid
-        if SitesGroupImportActions.UUID_FIELD in fieldmapped_fields:
-            check_duplicate_uuid(
-                imprt, entity, fieldmapped_fields.get(SitesGroupImportActions.UUID_FIELD)
-            )
+            # Check duplicate uuid
+            check_duplicate_uuid(imprt, entity, uuid_field)
 
         if SitesGroupImportActions.ID_ORIGIN_FIELD in fieldmapped_fields:
             generate_missing_uuid_for_id_origin(
