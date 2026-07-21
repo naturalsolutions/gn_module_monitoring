@@ -1,6 +1,5 @@
 from flask import current_app
 from .entity_import_actions_utils import EntityImportActionsUtils
-from geonature.utils.env import db
 
 from geonature.core.imports.models import TImports
 
@@ -212,19 +211,8 @@ class SiteImportActions:
         from gn_module_monitoring.monitoring.import_actions.sites_group_actions import (
             SitesGroupImportActions,
         )
-        import sqlalchemy as sa
 
-        transient_table = imprt.destination.get_transient_table()
         entity = EntityImportActionsUtils.get_entity(imprt, SiteImportActions.ENTITY_CODE)
-        print(
-            db.session.execute(
-                sa.select(
-                    transient_table.c.sites_group_line_no,
-                    transient_table.c.site_line_no,
-                    transient_table.c.id_base_site,
-                ).where(transient_table.c.id_import == imprt.id_import)
-            )
-        )
         set_parent_id_from_line_no(
             imprt,
             entity=entity,
