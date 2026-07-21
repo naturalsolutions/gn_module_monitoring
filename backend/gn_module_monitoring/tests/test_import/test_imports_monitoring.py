@@ -310,8 +310,10 @@ class TestImportMonitoring:
         assert (group_a.altitude_min, group_a.altitude_max) == (100, 500)
         assert (group_b.altitude_min, group_b.altitude_max) == (200, 600)
 
-        # NB : les champs spécifiques d'un groupe (data JSONB) ne sont pas importés
-        # (get_entity_model_complements ne gère pas l'entité sites_group), on ne les vérifie donc pas.
+        # Champ spécifique du groupe stocké dans data (clé sans le préfixe g__),
+        # à parité avec les champs spécifiques de site/visite/observation
+        assert group_a.data["group_specific"] == "spec A"
+        assert group_b.data["group_specific"] == "spec B"
 
         # La bounding box englobe bien la géométrie de chacun des sites enfants
         for group in groups:

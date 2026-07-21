@@ -268,6 +268,20 @@ class MonitoringImportActions(ImportActions):
                 core_dest_col_names.append("id_module")
                 core_select_cols.append(sa.literal(imprt.destination.id_module).label("id_module"))
 
+            # sites_group n'a pas de table complément séparée : ses champs spécifiques
+            # sont stockés dans sa propre colonne data (parité avec site/visit/observation).
+            if entity.code == "sites_group" and complement_fields:
+                sg_json_args = []
+                for field in complement_fields:
+                    sg_json_args.extend(
+                        [
+                            EntityImportActionsUtils.get_destination_column_name(field.dest_field),
+                            transient_table.c[field.dest_field],
+                        ]
+                    )
+                core_dest_col_names.append("data")
+                core_select_cols.append(sa.func.json_build_object(*sg_json_args).label("data"))
+
             core_select_stmt = (
                 sa.select(*core_select_cols)
                 .where(transient_table.c.id_import == imprt.id_import)
