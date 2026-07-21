@@ -12,7 +12,7 @@ from geonature.utils.env import db
 from pypnusershub.db.models import UserList
 
 from gn_module_monitoring.command.cmd import cmd_add_update_import_on_protocole
-from gn_module_monitoring.monitoring.models import TMonitoringModules
+from gn_module_monitoring.monitoring.models import TMonitoringModules, TMonitoringSitesGroups
 from gn_module_monitoring.command.imports.protocol import update_protocol
 
 occhab = pytest.importorskip("gn_module_occhab")
@@ -111,7 +111,7 @@ def fieldmapping(
     preset_fieldmapping,
     types_site,
 ):
-    return {
+    mapping = {
         "uuid_base_site": {"column_src": "uuid_base_site"},
         "s__base_site": {"column_src": "s__base_site"},
         "s__id_inventor": {"constant_value": {"id_role": 3}},
@@ -138,6 +138,21 @@ def fieldmapping(
         "o__cd_nom": {"column_src": "o__cd_nom"},
         "o__comments": {"column_src": "o__comments"},
     }
+    # Colonnes propres aux groupes de sites (uniquement pour le fichier dédié)
+    if import_file_name == "valid_sites_groups.csv":
+        mapping.update(
+            {
+                "uuid_sites_group": {"column_src": "uuid_sites_group"},
+                "id_sites_group_origin": {"column_src": "id_sites_group_origin"},
+                "g__sites_group_code": {"column_src": "g__sites_group_code"},
+                "g__sites_group_name": {"column_src": "g__sites_group_name"},
+                "g__group_specific": {"column_src": "g__group_specific"},
+                "g__altitude_min": {"column_src": "g__altitude_min"},
+                "g__altitude_max": {"column_src": "g__altitude_max"},
+                "g__geom": {"column_src": "g__geom"},
+            }
+        )
+    return mapping
 
 
 @pytest.fixture()
@@ -236,6 +251,67 @@ class TestImportMonitoring:
             )
             == imported_import.statistics["observation_count"]
         )
+
+    @pytest.mark.parametrize(
+        "autogenerate, import_file_name,fieldmapping_preset_name",
+        [(False, "valid_sites_groups.csv", None)],
+    )
+    def test_import_valid_sites_groups(self, datasets, imported_import):
+        assert_import_errors(
+            imported_import,
+            set([]),
+        )
+
+        assert imported_import.statistics == {
+            "sites_group_count": 2,
+            "site_count": 3,
+            "visit_count": 4,
+            "observation_count": 6,
+            "taxa_count": 6,
+            "import_count": 15,  # 2 groupes + 3 sites + 4 visites + 6 observations
+            "nb_line_valid": 6,
+        }
+
+        groups = db.session.scalars(
+            sa.select(TMonitoringSitesGroups).where(
+                TMonitoringSitesGroups.id_import == imported_import.id_import
+            )
+        ).all()
+        # Deux groupes de sites importés
+        assert len(groups) == 2
+        assert {group.sites_group_code for group in groups} == {"GA", "GB"}
+
+        groups_by_code = {group.sites_group_code: group for group in groups}
+        group_a = groups_by_code["GA"]
+        group_b = groups_by_code["GB"]
+
+        # Les sites sont rattachés à leur groupe parent
+        assert len(group_a.sites) == 2
+        assert len(group_b.sites) == 1
+
+        # GA : rattachement par UUID fourni -> l'UUID du CSV est conservé
+        assert str(group_a.uuid_sites_group) == "11111111-1111-1111-1111-111111111111"
+        # GB : rattachement par id_sites_group_origin (aucun UUID fourni) -> UUID généré
+        assert group_b.uuid_sites_group is not None
+
+        for group in groups:
+            # Rattachement au module (cor_sites_group_module)
+            assert "test" in [module.module_code for module in group.modules]
+            # Bounding box calculée (géométrie du groupe + sites enfants)
+            assert group.geom is not None
+
+        # Altitudes importées telles quelles (check_altitudes ne valide que min <= max)
+        assert (group_a.altitude_min, group_a.altitude_max) == (100, 500)
+        assert (group_b.altitude_min, group_b.altitude_max) == (200, 600)
+
+        # Champ spécifique stocké dans la colonne data (clé sans le préfixe g__)
+        assert group_a.data["group_specific"] == "spec A"
+        assert group_b.data["group_specific"] == "spec B"
+
+        # La bounding box englobe bien la géométrie de chacun des sites enfants
+        for group in groups:
+            for site in group.sites:
+                assert db.session.scalar(sa.select(sa.func.ST_Covers(group.geom, site.geom)))
 
     def test_update_module_label(self, import_destination, module_code):
         new_label = "test_change"
