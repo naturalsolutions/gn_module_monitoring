@@ -139,12 +139,9 @@ def fieldmapping(
         "o__comments": {"column_src": "o__comments"},
     }
     # Colonnes propres aux groupes de sites (uniquement pour le fichier dédié)
+    # Pas de mapping "modules" : cor_sites_group_module est rempli automatiquement
+    # avec le module de la destination d'import.
     if import_file_name == "valid_sites_groups.csv":
-        # Le champ "modules" est obligatoire pour un groupe de sites : on le fixe
-        # au module test courant (valeur constante, comme s__types_site).
-        id_module_test = db.session.scalar(
-            sa.select(TMonitoringModules.id_module).where(TMonitoringModules.module_code == "test")
-        )
         mapping.update(
             {
                 "uuid_sites_group": {"column_src": "uuid_sites_group"},
@@ -155,7 +152,6 @@ def fieldmapping(
                 "g__altitude_min": {"column_src": "g__altitude_min"},
                 "g__altitude_max": {"column_src": "g__altitude_max"},
                 "g__geom": {"column_src": "g__geom"},
-                "g__modules": {"constant_value": [id_module_test]},
             }
         )
     return mapping

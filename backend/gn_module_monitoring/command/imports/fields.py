@@ -54,6 +54,7 @@ def prepare_fields(
 
     ignored_fields = [
         "id_module",  # handled manually
+        "modules",  # handled manually (cor_sites_group_module rempli avec le module de la destination)
         "id_dataset",  # handled manually
         "id_digitiser",  # handled manually
         "uuid_sites_group",  # handled manually
@@ -71,7 +72,6 @@ def prepare_fields(
         "nb_observations",  # dynamic
         "nb_individuals",  # dynamic
         "medias",  # not importable
-        "id_sites_group",  # ignored for now
     ]
 
     field_set_manually = []
