@@ -143,9 +143,7 @@ def fieldmapping(
         # Le champ "modules" est obligatoire pour un groupe de sites : on le fixe
         # au module test courant (valeur constante, comme s__types_site).
         id_module_test = db.session.scalar(
-            sa.select(TMonitoringModules.id_module).where(
-                TMonitoringModules.module_code == "test"
-            )
+            sa.select(TMonitoringModules.id_module).where(TMonitoringModules.module_code == "test")
         )
         mapping.update(
             {
