@@ -125,6 +125,22 @@ def fieldmapping(
     preset_fieldmapping,
     types_site,
 ):
+    # Colonnes propres aux groupes de sites.
+    # Pas de mapping "modules" : cor_sites_group_module est rempli automatiquement
+    # avec le module de la destination d'import.
+    sites_group_mapping = {
+        "uuid_sites_group": {"column_src": "uuid_sites_group"},
+        "id_sites_group_origin": {"column_src": "id_sites_group_origin"},
+        "g__sites_group_code": {"column_src": "g__sites_group_code"},
+        "g__sites_group_name": {"column_src": "g__sites_group_name"},
+        "g__group_specific": {"column_src": "g__group_specific"},
+        "g__altitude_min": {"column_src": "g__altitude_min"},
+        "g__altitude_max": {"column_src": "g__altitude_max"},
+        "g__geom": {"column_src": "g__geom"},
+    }
+    # Import de groupes de sites seuls : aucun champ site/visite/observation mappé
+    if import_file_name == "only_sites_groups.csv":
+        return sites_group_mapping
     mapping = {
         "uuid_base_site": {"column_src": "uuid_base_site"},
         "s__base_site": {"column_src": "s__base_site"},
@@ -152,22 +168,8 @@ def fieldmapping(
         "o__cd_nom": {"column_src": "o__cd_nom"},
         "o__comments": {"column_src": "o__comments"},
     }
-    # Colonnes propres aux groupes de sites (uniquement pour les fichiers dédiés)
-    # Pas de mapping "modules" : cor_sites_group_module est rempli automatiquement
-    # avec le module de la destination d'import.
     if "sites_group" in import_file_name:
-        mapping.update(
-            {
-                "uuid_sites_group": {"column_src": "uuid_sites_group"},
-                "id_sites_group_origin": {"column_src": "id_sites_group_origin"},
-                "g__sites_group_code": {"column_src": "g__sites_group_code"},
-                "g__sites_group_name": {"column_src": "g__sites_group_name"},
-                "g__group_specific": {"column_src": "g__group_specific"},
-                "g__altitude_min": {"column_src": "g__altitude_min"},
-                "g__altitude_max": {"column_src": "g__altitude_max"},
-                "g__geom": {"column_src": "g__geom"},
-            }
-        )
+        mapping.update(sites_group_mapping)
     return mapping
 
 
@@ -430,6 +432,50 @@ class TestImportMonitoring:
                 ]
             ],
         }
+
+    @pytest.mark.parametrize(
+        "autogenerate, import_file_name,fieldmapping_preset_name",
+        [(False, "only_sites_groups.csv", None)],
+    )
+    def test_import_only_sites_groups(self, datasets, imported_import):
+        """Import d'un fichier ne contenant que des groupes de sites, sans aucun champ
+        site/visite/observation mappé."""
+        assert_import_errors(
+            imported_import,
+            set([]),
+        )
+        assert imported_import.statistics == {
+            "sites_group_count": 2,
+            "import_count": 2,
+            "nb_line_valid": 2,
+        }
+
+        groups = db.session.scalars(
+            sa.select(TMonitoringSitesGroups).where(
+                TMonitoringSitesGroups.id_import == imported_import.id_import
+            )
+        ).all()
+        assert len(groups) == 2
+        groups_by_code = {group.sites_group_code: group for group in groups}
+        assert set(groups_by_code) == {"GC1", "GC2"}
+        # GC1 : UUID du fichier conservé ; GC2 : UUID généré via id_sites_group_origin
+        assert (
+            str(groups_by_code["GC1"].uuid_sites_group) == "12121212-1212-1212-1212-121212121212"
+        )
+        assert groups_by_code["GC2"].uuid_sites_group is not None
+        for group in groups:
+            assert "test" in [module.module_code for module in group.modules]
+            assert group.geom is not None
+            assert len(group.sites) == 0
+        assert groups_by_code["GC1"].data["group_specific"] == "spec C1"
+        assert groups_by_code["GC2"].data["group_specific"] == "spec C2"
+
+        # Sans site enfant, la bounding box de l'import est celle des groupes seuls
+        bbox = imported_import.destination.actions.compute_bounding_box(imported_import)
+        assert bbox is not None and bbox["type"] == "Polygon"
+        xs = [x for x, y in bbox["coordinates"][0]]
+        ys = [y for x, y in bbox["coordinates"][0]]
+        assert (min(xs), max(xs), min(ys), max(ys)) == (6.0, 6.9, 44.5, 44.9)
 
     @pytest.mark.parametrize(
         "autogenerate, import_file_name,fieldmapping_preset_name",
