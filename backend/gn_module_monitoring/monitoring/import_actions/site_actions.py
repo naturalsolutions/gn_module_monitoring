@@ -309,10 +309,10 @@ class SiteImportActions:
             imprt, SitesGroupImportActions.ENTITY_CODE
         )
 
-        # Un site qui référence un groupe de sites (par UUID ou identifiant d'origine)
-        # dont la référence n'a pu être résolue ni en base, ni sur une autre ligne du
-        # fichier est en erreur, même quand le groupe de sites est optionnel : la
-        # référence fournie serait sinon silencieusement ignorée.
+        # A site referencing a sites group (by UUID or origin identifier) that could
+        # be resolved neither in the destination nor on another line of the file is
+        # erroneous, even when the sites group is optional: the provided reference
+        # would otherwise be silently ignored.
         transient_table = imprt.destination.get_transient_table()
         entity_fields, _, _ = get_mapping_data(imprt, entity_site)
         for ref_field_name in (
@@ -329,13 +329,13 @@ class SiteImportActions:
                 error_column=ref_field_name,
                 whereclause=sa.and_(
                     transient_table.c[entity_site.validity_column].is_(True),
-                    # pas de groupe défini sur la ligne...
+                    # no sites group defined on the same line...
                     transient_table.c[entity_sites_group.validity_column].is_(None),
-                    # ...la référence n'a pas été trouvée en base...
+                    # ...the reference was not found in the destination...
                     transient_table.c[SitesGroupImportActions.ID_FIELD].is_(None),
-                    # ...ni sur une autre ligne du fichier...
+                    # ...nor on another line of the file...
                     transient_table.c[SitesGroupImportActions.LINE_NO].is_(None),
-                    # ...alors qu'elle a été fournie
+                    # ...although a reference was provided
                     transient_table.c[ref_field.source_field].isnot(None),
                 ),
             )

@@ -1,3 +1,9 @@
+import pytest
+
+# Comme le conftest des tests d'import du cœur : réécrit les assertions de
+# assert_import_errors pour obtenir le diff attendu/obtenu en cas d'échec.
+pytest.register_assert_rewrite("geonature.tests.imports.utils")
+
 from geonature.tests.fixtures import *
 from geonature.tests.fixtures import _session, app, _app, users
 

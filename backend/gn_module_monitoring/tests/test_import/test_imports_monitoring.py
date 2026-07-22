@@ -237,21 +237,6 @@ def sites_group_mandatory_config(monkeypatch):
     monkeypatch.setattr(repositories, "get_config", get_config_without_first_level_site)
 
 
-def get_errors_set(imprt):
-    """Même format que assert_import_errors, mais utilisable dans un assert direct
-    du module de test pour bénéficier de la réécriture d'assertions de pytest
-    (diff complet attendu/obtenu dans le rapport CI)."""
-    return {
-        (
-            error.type.name,
-            error.entity.code if error.entity else None,
-            error.column,
-            frozenset(error.rows or []),
-        )
-        for error in imprt.errors
-    }
-
-
 def run_import(
     client,
     user,
@@ -517,8 +502,6 @@ class TestImportMonitoring:
                 frozenset({3, 4}),
             ),
         }
-        assert get_errors_set(prepared_import) == expected_errors
-        # Vérifie aussi la cohérence des lignes marquées erronées
         assert_import_errors(prepared_import, expected_errors)
 
     @pytest.mark.parametrize(
@@ -580,7 +563,6 @@ class TestImportMonitoring:
                 frozenset({2, 3}),
             ),
         }
-        assert get_errors_set(prepared_import) == expected_errors
         assert_import_errors(prepared_import, expected_errors)
 
     @pytest.mark.parametrize(
@@ -607,7 +589,6 @@ class TestImportMonitoring:
                 frozenset({4}),
             ),
         }
-        assert get_errors_set(prepared_import) == expected_errors
         assert_import_errors(prepared_import, expected_errors)
 
     @pytest.mark.parametrize(
@@ -628,7 +609,6 @@ class TestImportMonitoring:
                 frozenset({3}),
             ),
         }
-        assert get_errors_set(imported_import) == expected_errors
         assert_import_errors(imported_import, expected_errors)
         assert imported_import.statistics == {
             "sites_group_count": 1,
@@ -749,7 +729,6 @@ class TestImportMonitoring:
                 frozenset({2, 3, 4, 5, 6, 7}),
             ),
         }
-        assert get_errors_set(second_import) == expected_errors
         assert_import_errors(second_import, expected_errors)
         # GA (UUID fourni dans le fichier) n'est pas dupliqué, ni ses sites
         assert (
