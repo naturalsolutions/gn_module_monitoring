@@ -1,0 +1,3 @@
+id_sites_group_origin;uuid_sites_group;g__sites_group_code;g__sites_group_name;g__group_specific;g__altitude_min;g__altitude_max;g__geom;uuid_base_site;s__base_site_code;s__base_site_name;s__base_site_description;s__meteo;s__profondeur_grotte;s__contact_name;s__first_use_date;s__roost_type;y;x;uuid_base_visit;v__visit_date_min;v__visit_date_max;v__meteo;v__observers;uuid_observation;o__cd_nom;o__comments;id_dataset
+;22222222-2222-2222-2222-222222222222;GDUP;Groupe dup un;;100;500;POLYGON((6.0 44.5,6.8 44.5,6.8 44.9,6.0 44.9,6.0 44.5));;;;;;;;;;;;;;;;;;;;
+;22222222-2222-2222-2222-222222222222;GDUP;Groupe dup deux;;100;500;POLYGON((6.0 44.5,6.8 44.5,6.8 44.9,6.0 44.9,6.0 44.5));;;;;;;;;;;;;;;;;;;;
