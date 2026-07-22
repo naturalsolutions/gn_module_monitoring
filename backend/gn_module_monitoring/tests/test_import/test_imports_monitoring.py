@@ -235,6 +235,21 @@ def sites_group_mandatory_config(monkeypatch):
     monkeypatch.setattr(repositories, "get_config", get_config_without_first_level_site)
 
 
+def get_errors_set(imprt):
+    """Même format que assert_import_errors, mais utilisable dans un assert direct
+    du module de test pour bénéficier de la réécriture d'assertions de pytest
+    (diff complet attendu/obtenu dans le rapport CI)."""
+    return {
+        (
+            error.type.name,
+            error.entity.code if error.entity else None,
+            error.column,
+            frozenset(error.rows or []),
+        )
+        for error in imprt.errors
+    }
+
+
 def run_import(
     client,
     user,
@@ -261,6 +276,7 @@ def run_import(
             before.encode("ascii"),
             after.encode("ascii"),
         )
+    db.session.flush()
     r = client.post(
         url_for("import.decode_file", import_id=imprt.id_import),
         data={"encoding": "utf-8", "format": "csv", "srid": 4326, "separator": ";"},
@@ -420,24 +436,44 @@ class TestImportMonitoring:
         [(False, "invalid_sites_groups.csv", None)],
     )
     def test_import_sites_groups_errors(self, datasets, prepared_import):
-        # Ligne 3 : altitude min > altitude max ; ligne 4 : WKT non parsable
-        assert_import_errors(
-            prepared_import,
-            {
-                (
-                    ImportCodeError.ALTI_MIN_SUP_ALTI_MAX,
-                    "sites_group",
-                    "g__altitude_min",
-                    frozenset({3}),
-                ),
-                (
-                    ImportCodeError.INVALID_WKT,
-                    "sites_group",
-                    "WKT",
-                    frozenset({4}),
-                ),
-            },
-        )
+        # Ligne 3 : altitude min > altitude max ; ligne 4 : WKT non parsable.
+        # Le groupe en erreur invalide en cascade le site de la ligne, puis la
+        # visite et l'observation (ERRONEOUS_PARENT_ENTITY).
+        expected_errors = {
+            (
+                ImportCodeError.ALTI_MIN_SUP_ALTI_MAX,
+                "sites_group",
+                "g__altitude_min",
+                frozenset({3}),
+            ),
+            (
+                ImportCodeError.INVALID_WKT,
+                "sites_group",
+                "WKT",
+                frozenset({4}),
+            ),
+            (
+                ImportCodeError.ERRONEOUS_PARENT_ENTITY,
+                "site",
+                "",
+                frozenset({3, 4}),
+            ),
+            (
+                ImportCodeError.ERRONEOUS_PARENT_ENTITY,
+                "visit",
+                "",
+                frozenset({3, 4}),
+            ),
+            (
+                ImportCodeError.ERRONEOUS_PARENT_ENTITY,
+                "observation",
+                "",
+                frozenset({3, 4}),
+            ),
+        }
+        assert get_errors_set(prepared_import) == expected_errors
+        # Vérifie aussi la cohérence des lignes marquées erronées
+        assert_import_errors(prepared_import, expected_errors)
 
     @pytest.mark.parametrize(
         "autogenerate, import_file_name,fieldmapping_preset_name",
@@ -450,11 +486,7 @@ class TestImportMonitoring:
         ERROR mais positionne la validité à None (lignes non importées, non marquées
         erronées), ce que le helper ne sait pas vérifier.
         """
-        errors = {
-            (error.type.name, error.entity.code, error.column, frozenset(error.rows or []))
-            for error in prepared_import.errors
-        }
-        assert errors == {
+        assert get_errors_set(prepared_import) == {
             (
                 ImportCodeError.INCOHERENT_DATA,
                 "sites_group",
@@ -472,17 +504,16 @@ class TestImportMonitoring:
     ):
         """Groupe obligatoire (pas de "site" au 1er niveau du tree) : un site sans
         groupe (ligne 4) ou référençant un groupe inexistant (ligne 3) est rejeté."""
-        assert_import_errors(
-            prepared_import,
-            {
-                (
-                    ImportCodeError.NO_PARENT_ENTITY,
-                    "site",
-                    "id_sites_group",
-                    frozenset({3, 4}),
-                ),
-            },
-        )
+        expected_errors = {
+            (
+                ImportCodeError.NO_PARENT_ENTITY,
+                "site",
+                "id_sites_group",
+                frozenset({3, 4}),
+            ),
+        }
+        assert get_errors_set(prepared_import) == expected_errors
+        assert_import_errors(prepared_import, expected_errors)
 
     @pytest.mark.parametrize(
         "autogenerate, import_file_name,fieldmapping_preset_name",
@@ -551,35 +582,34 @@ class TestImportMonitoring:
             contentmapping,
             observers_mapping,
         )
-        assert_import_errors(
-            second_import,
-            {
-                (
-                    ImportCodeError.SKIP_EXISTING_UUID,
-                    "sites_group",
-                    "uuid_sites_group",
-                    frozenset({2, 3, 4, 5, 6}),
-                ),
-                (
-                    ImportCodeError.SKIP_EXISTING_UUID,
-                    "site",
-                    "uuid_base_site",
-                    frozenset({2, 3, 4, 5, 6, 7}),
-                ),
-                (
-                    ImportCodeError.SKIP_EXISTING_UUID,
-                    "visit",
-                    "uuid_base_visit",
-                    frozenset({2, 3, 4, 5, 6, 7}),
-                ),
-                (
-                    ImportCodeError.SKIP_EXISTING_UUID,
-                    "observation",
-                    "uuid_observation",
-                    frozenset({2, 3, 4, 5, 6, 7}),
-                ),
-            },
-        )
+        expected_errors = {
+            (
+                ImportCodeError.SKIP_EXISTING_UUID,
+                "sites_group",
+                "uuid_sites_group",
+                frozenset({2, 3, 4, 5, 6}),
+            ),
+            (
+                ImportCodeError.SKIP_EXISTING_UUID,
+                "site",
+                "uuid_base_site",
+                frozenset({2, 3, 4, 5, 6, 7}),
+            ),
+            (
+                ImportCodeError.SKIP_EXISTING_UUID,
+                "visit",
+                "uuid_base_visit",
+                frozenset({2, 3, 4, 5, 6, 7}),
+            ),
+            (
+                ImportCodeError.SKIP_EXISTING_UUID,
+                "observation",
+                "uuid_observation",
+                frozenset({2, 3, 4, 5, 6, 7}),
+            ),
+        }
+        assert get_errors_set(second_import) == expected_errors
+        assert_import_errors(second_import, expected_errors)
         # GA (UUID fourni dans le fichier) n'est pas dupliqué, ni ses sites
         assert (
             db.session.scalar(
