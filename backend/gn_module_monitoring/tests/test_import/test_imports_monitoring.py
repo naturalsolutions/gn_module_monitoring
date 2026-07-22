@@ -523,6 +523,28 @@ class TestImportMonitoring:
 
     @pytest.mark.parametrize(
         "autogenerate, import_file_name,fieldmapping_preset_name",
+        [(False, "invalid_sites_groups.csv", None)],
+    )
+    def test_preview_sites_groups_data(self, client, datasets, prepared_import):
+        """La prévisualisation avant validation expose l'entité groupe de sites,
+        ses colonnes mappées et ses comptages de lignes valides/invalides."""
+        with logged_user(client, prepared_import.authors[0]):
+            r = client.get(
+                url_for("import.preview_valid_data", import_id=prepared_import.id_import)
+            )
+        assert r.status_code == 200, r.data
+        entities = {e["entity"]["code"]: e for e in r.json["entities"]}
+        assert set(entities) == {"sites_group", "site", "visit", "observation"}
+        # Ligne 2 valide, lignes 3 et 4 invalides, pour chacune des quatre entités
+        # (groupes en erreur puis cascade site -> visite -> observation)
+        for code, entity_data in entities.items():
+            assert entity_data["n_valid_data"] == 1, code
+            assert entity_data["n_invalid_data"] == 2, code
+        sites_group_columns = {c["prop"] for c in entities["sites_group"]["columns"]}
+        assert {"g__sites_group_code", "g__sites_group_name"} <= sites_group_columns
+
+    @pytest.mark.parametrize(
+        "autogenerate, import_file_name,fieldmapping_preset_name",
         [(False, "incoherent_sites_groups.csv", None)],
     )
     def test_import_sites_groups_incoherent_uuid(self, datasets, prepared_import):
