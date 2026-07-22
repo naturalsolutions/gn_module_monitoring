@@ -563,6 +563,47 @@ class TestImportMonitoring:
 
     @pytest.mark.parametrize(
         "autogenerate, import_file_name,fieldmapping_preset_name",
+        [(False, "no_parent_sites_groups.csv", None)],
+    )
+    def test_import_sites_without_sites_group(self, datasets, imported_import):
+        """Même fichier que test_import_sites_groups_mandatory_no_parent mais avec la
+        config par défaut du module test ("site" au 1er niveau du tree -> groupe
+        optionnel) : les sites sans groupe (ligne 4) ou référençant un groupe
+        inexistant (ligne 3) sont importés sans groupe, sans erreur."""
+        assert_import_errors(
+            imported_import,
+            set([]),
+        )
+        assert imported_import.statistics == {
+            "sites_group_count": 1,
+            "site_count": 3,
+            "visit_count": 1,
+            "observation_count": 1,
+            "taxa_count": 1,
+            "import_count": 6,
+            "nb_line_valid": 3,
+        }
+        sites = db.session.scalars(
+            sa.select(TMonitoringSites).where(
+                TMonitoringSites.id_import == imported_import.id_import
+            )
+        ).all()
+        sites_by_code = {site.base_site_code: site for site in sites}
+        assert set(sites_by_code) == {"site_np_01", "site_np_02", "site_np_03"}
+        group = db.session.execute(
+            sa.select(TMonitoringSitesGroups).where(
+                TMonitoringSitesGroups.id_import == imported_import.id_import
+            )
+        ).scalar_one()
+        # Le site de la ligne 2 est rattaché au groupe défini sur sa ligne
+        assert sites_by_code["site_np_01"].id_sites_group == group.id_sites_group
+        # Les sites sans groupe (ou dont la référence de groupe est inconnue,
+        # ignorée quand le groupe est optionnel) sont importés sans rattachement
+        assert sites_by_code["site_np_02"].id_sites_group is None
+        assert sites_by_code["site_np_03"].id_sites_group is None
+
+    @pytest.mark.parametrize(
+        "autogenerate, import_file_name,fieldmapping_preset_name",
         [(False, "existing_sites_groups.csv", None)],
     )
     def test_import_site_attached_to_existing_sites_group(
