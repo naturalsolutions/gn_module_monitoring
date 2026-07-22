@@ -1,8 +1,11 @@
+import sqlalchemy as sa
 from flask import current_app
 from .entity_import_actions_utils import EntityImportActionsUtils
 
 from geonature.core.imports.models import TImports
 
+from geonature.core.imports.checks.errors import ImportCodeError
+from geonature.core.imports.checks.sql.utils import report_erroneous_rows
 from geonature.core.imports.checks.sql.parent import (
     set_parent_line_no,
     check_no_parent_entity,
@@ -305,6 +308,38 @@ class SiteImportActions:
         entity_sites_group = EntityImportActionsUtils.get_entity(
             imprt, SitesGroupImportActions.ENTITY_CODE
         )
+
+        # Un site qui référence un groupe de sites (par UUID ou identifiant d'origine)
+        # dont la référence n'a pu être résolue ni en base, ni sur une autre ligne du
+        # fichier est en erreur, même quand le groupe de sites est optionnel : la
+        # référence fournie serait sinon silencieusement ignorée.
+        transient_table = imprt.destination.get_transient_table()
+        entity_fields, _, _ = get_mapping_data(imprt, entity_site)
+        for ref_field_name in (
+            SitesGroupImportActions.UUID_FIELD,
+            SitesGroupImportActions.ID_ORIGIN_FIELD,
+        ):
+            ref_field = entity_fields.get(ref_field_name)
+            if ref_field is None:
+                continue
+            report_erroneous_rows(
+                imprt,
+                entity_site,
+                error_type=ImportCodeError.NO_PARENT_ENTITY,
+                error_column=ref_field_name,
+                whereclause=sa.and_(
+                    transient_table.c[entity_site.validity_column].is_(True),
+                    # pas de groupe défini sur la ligne...
+                    transient_table.c[entity_sites_group.validity_column].is_(None),
+                    # ...la référence n'a pas été trouvée en base...
+                    transient_table.c[SitesGroupImportActions.ID_FIELD].is_(None),
+                    # ...ni sur une autre ligne du fichier...
+                    transient_table.c[SitesGroupImportActions.LINE_NO].is_(None),
+                    # ...alors qu'elle a été fournie
+                    transient_table.c[ref_field.source_field].isnot(None),
+                ),
+            )
+
         if isSitesGroupMandatory:
             check_no_parent_entity(
                 imprt,

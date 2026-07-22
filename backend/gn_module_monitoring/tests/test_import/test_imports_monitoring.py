@@ -528,18 +528,38 @@ class TestImportMonitoring:
     def test_import_sites_groups_incoherent_uuid(self, datasets, prepared_import):
         """Même UUID de groupe sur deux lignes avec un contenu différent -> INCOHERENT_DATA.
 
-        Assertion directe (sans assert_import_errors) : INCOHERENT_DATA est de niveau
-        ERROR mais positionne la validité à None (lignes non importées, non marquées
-        erronées), ce que le helper ne sait pas vérifier.
+        Le groupe devient non identifiable (validité None) : la référence de groupe des
+        sites de ces lignes ne peut plus être résolue -> NO_PARENT_ENTITY sur les sites,
+        puis cascade ERRONEOUS_PARENT_ENTITY sur leurs visites et observations.
         """
-        assert get_errors_set(prepared_import) == {
+        expected_errors = {
             (
                 ImportCodeError.INCOHERENT_DATA,
                 "sites_group",
                 "uuid_sites_group",
                 frozenset({2, 3}),
-            )
+            ),
+            (
+                ImportCodeError.NO_PARENT_ENTITY,
+                "site",
+                "uuid_sites_group",
+                frozenset({2, 3}),
+            ),
+            (
+                ImportCodeError.ERRONEOUS_PARENT_ENTITY,
+                "visit",
+                "",
+                frozenset({2, 3}),
+            ),
+            (
+                ImportCodeError.ERRONEOUS_PARENT_ENTITY,
+                "observation",
+                "",
+                frozenset({2, 3}),
+            ),
         }
+        assert get_errors_set(prepared_import) == expected_errors
+        assert_import_errors(prepared_import, expected_errors)
 
     @pytest.mark.parametrize(
         "autogenerate, import_file_name,fieldmapping_preset_name",
@@ -548,14 +568,21 @@ class TestImportMonitoring:
     def test_import_sites_groups_mandatory_no_parent(
         self, sites_group_mandatory_config, datasets, prepared_import
     ):
-        """Groupe obligatoire (pas de "site" au 1er niveau du tree) : un site sans
-        groupe (ligne 4) ou référençant un groupe inexistant (ligne 3) est rejeté."""
+        """Groupe obligatoire (pas de "site" au 1er niveau du tree) : un site
+        référençant un groupe inexistant (ligne 3, erreur portée par la référence
+        fournie) ou sans aucun groupe (ligne 4) est rejeté."""
         expected_errors = {
             (
                 ImportCodeError.NO_PARENT_ENTITY,
                 "site",
+                "uuid_sites_group",
+                frozenset({3}),
+            ),
+            (
+                ImportCodeError.NO_PARENT_ENTITY,
+                "site",
                 "id_sites_group",
-                frozenset({3, 4}),
+                frozenset({4}),
             ),
         }
         assert get_errors_set(prepared_import) == expected_errors
@@ -568,20 +595,27 @@ class TestImportMonitoring:
     def test_import_sites_without_sites_group(self, datasets, imported_import):
         """Même fichier que test_import_sites_groups_mandatory_no_parent mais avec la
         config par défaut du module test ("site" au 1er niveau du tree -> groupe
-        optionnel) : les sites sans groupe (ligne 4) ou référençant un groupe
-        inexistant (ligne 3) sont importés sans groupe, sans erreur."""
-        assert_import_errors(
-            imported_import,
-            set([]),
-        )
+        optionnel) : le site sans aucun groupe (ligne 4) est importé sans rattachement,
+        mais le site référençant un groupe inexistant (ligne 3) reste rejeté — la
+        référence fournie ne doit pas être silencieusement ignorée."""
+        expected_errors = {
+            (
+                ImportCodeError.NO_PARENT_ENTITY,
+                "site",
+                "uuid_sites_group",
+                frozenset({3}),
+            ),
+        }
+        assert get_errors_set(imported_import) == expected_errors
+        assert_import_errors(imported_import, expected_errors)
         assert imported_import.statistics == {
             "sites_group_count": 1,
-            "site_count": 3,
+            "site_count": 2,
             "visit_count": 1,
             "observation_count": 1,
             "taxa_count": 1,
-            "import_count": 6,
-            "nb_line_valid": 3,
+            "import_count": 5,
+            "nb_line_valid": 2,
         }
         sites = db.session.scalars(
             sa.select(TMonitoringSites).where(
@@ -589,7 +623,7 @@ class TestImportMonitoring:
             )
         ).all()
         sites_by_code = {site.base_site_code: site for site in sites}
-        assert set(sites_by_code) == {"site_np_01", "site_np_02", "site_np_03"}
+        assert set(sites_by_code) == {"site_np_01", "site_np_03"}
         group = db.session.execute(
             sa.select(TMonitoringSitesGroups).where(
                 TMonitoringSitesGroups.id_import == imported_import.id_import
@@ -597,9 +631,7 @@ class TestImportMonitoring:
         ).scalar_one()
         # Le site de la ligne 2 est rattaché au groupe défini sur sa ligne
         assert sites_by_code["site_np_01"].id_sites_group == group.id_sites_group
-        # Les sites sans groupe (ou dont la référence de groupe est inconnue,
-        # ignorée quand le groupe est optionnel) sont importés sans rattachement
-        assert sites_by_code["site_np_02"].id_sites_group is None
+        # Le site sans aucune référence de groupe est importé sans rattachement
         assert sites_by_code["site_np_03"].id_sites_group is None
 
     @pytest.mark.parametrize(
