@@ -146,6 +146,10 @@ export class MonitoringMapComponent implements OnInit {
         this.onEachFeatureSite(this.buildQueryParams('site')),
         params
       );
+      // couche principale restreinte à un site, on propose les autres en repère
+      if (params['id_base_site'] !== undefined) {
+        this.displayOtherObjects(params['id_base_site']);
+      }
     } else if (displayObject == 'sites_group') {
       const params = {
         ...this.listService.getPrefilterByType(displayObject),
@@ -171,6 +175,24 @@ export class MonitoringMapComponent implements OnInit {
         paramsSite
       );
     }
+  }
+
+  /** sites et groupes de sites du sous-module, en couches "info" */
+  displayOtherObjects(idBaseSite: number) {
+    const { id_base_site, ...moduleSiteParams } = this.listService.getPrefilterByType('site');
+
+    this._geojsonService.getSitesGroupsChildGeometries(
+      this.onEachFeatureSite(this.buildQueryParams('site')),
+      moduleSiteParams,
+      'info_hidden',
+      undefined,
+      { property: 'id_base_site', value: idBaseSite }
+    );
+    this._geojsonService.getSitesGroupsGeometries(
+      this.onEachFeatureGroupSite(this.buildQueryParams('sites_group')),
+      this.listService.getPrefilterByType('sites_group'),
+      'info_hidden'
+    );
   }
 
   buildQueryParams(displayObject: string) {
