@@ -229,7 +229,7 @@ export class MonitoringSitesDetailComponent extends MonitoringGeomComponent impl
   displayOtherObjects(idBaseSite: number) {
     this.geojsonService.getSitesGroupsChildGeometries(
       this.onEachFeatureSite(),
-      {},
+      { types_site: this._configService.moduleTypesSite(this.moduleCode) },
       'info_hidden',
       undefined,
       { property: 'id_base_site', value: idBaseSite }
@@ -337,7 +337,7 @@ export class MonitoringSitesDetailComponent extends MonitoringGeomComponent impl
   }
 
   ngOnDestroy() {
-    this.geojsonService.removeFeatureGroup(this.geojsonService.sitesFeatureGroup);
+    this.geojsonService.removeAllFeatureGroup();
     this._formService.changeCurrentEditMode(false);
     this._formService.changeFormMapObj({
       frmGp: null,

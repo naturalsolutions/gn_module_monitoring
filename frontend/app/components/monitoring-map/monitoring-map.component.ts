@@ -179,18 +179,16 @@ export class MonitoringMapComponent implements OnInit {
 
   /** sites et groupes de sites du sous-module, en couches "info" */
   displayOtherObjects(idBaseSite: number) {
-    const { id_base_site, ...moduleSiteParams } = this.listService.getPrefilterByType('site');
-
     this._geojsonService.getSitesGroupsChildGeometries(
       this.onEachFeatureSite(this.buildQueryParams('site')),
-      moduleSiteParams,
+      { types_site: this._configService.moduleTypesSite(this.obj.moduleCode) },
       'info_hidden',
       undefined,
       { property: 'id_base_site', value: idBaseSite }
     );
     this._geojsonService.getSitesGroupsGeometries(
       this.onEachFeatureGroupSite(this.buildQueryParams('sites_group')),
-      this.listService.getPrefilterByType('sites_group'),
+      {},
       'info_hidden'
     );
   }

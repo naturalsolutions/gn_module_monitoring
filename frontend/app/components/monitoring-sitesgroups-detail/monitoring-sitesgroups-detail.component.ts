@@ -290,7 +290,7 @@ export class MonitoringSitesgroupsDetailComponent
     );
     this._geojsonService.getSitesGroupsChildGeometries(
       this.onEachFeatureSite(),
-      {},
+      { types_site: this._configService.moduleTypesSite(this.moduleCode) },
       'info_hidden',
       undefined,
       exclude

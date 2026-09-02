@@ -266,10 +266,11 @@ export class GeoJSONService {
         // createOrderedGeojson l'a déjà ajoutée à la carte, la retirer pour la
         // laisser à cocher
         map.removeLayer(featureGroup);
-      } else if (zoom) {
-        map.fitBounds(featureGroup.getBounds());
       }
     });
+    if (zoom) {
+      map.fitBounds(featureGroup.getBounds());
+    }
 
     return featureGroup;
   }
@@ -471,7 +472,9 @@ export class GeoJSONService {
       return {
         layerName: layerName,
         zoom: mode === 'info_zoom',
-        visible: this.userLayerVisibility[layerName] ?? mode !== 'info_hidden',
+        // seule la couche "à cocher" garde le choix de l'utilisateur ; en "info" et
+        // "info_zoom" la couche est un repère que le formulaire attend à l'écran
+        visible: mode !== 'info_hidden' || (this.userLayerVisibility[layerName] ?? false),
       };
     }
     return {
