@@ -24,6 +24,46 @@ import { Module } from '../interfaces/module';
 import { MonitoringObjectService } from './monitoring-object.service';
 import { ConfigService } from './config.service';
 
+// libellés anglais des objets génériques, la version française étant construite avec genre et article
+const EN_LABELS = {
+  sites_group: {
+    label: 'site group',
+    addObjLabel: 'Add a new site group',
+    editObjLabel: 'Edit the site group',
+    detailObjLabel: 'Site group details',
+    seeObjLabel: 'View the site group',
+    addChildLabel: 'Add a site',
+    deleteObjLabel: 'Delete the site group',
+  },
+  site: {
+    label: 'site',
+    addObjLabel: 'Add a new site',
+    editObjLabel: 'Edit the site',
+    detailObjLabel: 'Site details',
+    seeObjLabel: 'View the site',
+    deleteObjLabel: 'Delete the site',
+    addChildLabel: 'Add a visit',
+  },
+  visit: {
+    label: 'visit',
+    addObjLabel: 'Add a new visit',
+    editObjLabel: 'Edit the visit',
+    seeObjLabel: 'View the visit',
+    detailObjLabel: 'Visit details',
+    addChildLabel: 'Add an observation',
+    deleteObjLabel: 'Delete the visit',
+  },
+  individual: {
+    label: 'individual',
+    addObjLabel: 'Add a new individual',
+    editObjLabel: 'Edit the individual',
+    detailObjLabel: 'Individual details',
+    seeObjLabel: 'View the individual',
+    addChildLabel: 'Add a marking',
+    deleteObjLabel: 'Delete the individual',
+  },
+};
+
 @Injectable()
 export class ApiService<T = IObject> implements IService<T> {
   public objectObs: IobjObs<T>;
@@ -36,9 +76,16 @@ export class ApiService<T = IObject> implements IService<T> {
     protected _dataUtilsService: DataUtilsService
   ) {}
 
+  protected isEnglish(): boolean {
+    return this._monitoringObjectService?.translate?.currentLang === 'en';
+  }
+
   init(endPoint: endPoints, objectObjs: IobjObs<T>) {
     this.endPoint = endPoint;
-    this.objectObs = objectObjs;
+    this.objectObs =
+      this.isEnglish() && EN_LABELS[objectObjs.objectType]
+        ? { ...objectObjs, ...EN_LABELS[objectObjs.objectType] }
+        : objectObjs;
     // souscrit au sujet config du module en cours
     // quand le module change
     // test if config exist pour le module
@@ -111,14 +158,24 @@ export class ApiService<T = IObject> implements IService<T> {
     let articleLabel = Utils.labelArtDef(genre, label);
     let articleUndefLabel = Utils.labelArtUndef(genre);
 
-    let labels = {
-      label: label,
-      addObjLabel: `Ajouter ${articleUndefLabel} ${nouveauLabel} ${label.toLowerCase()}`,
-      editObjLabel: `Editer ${articleLabel} ${label.toLowerCase()}`,
-      seeObjLabel: `Consulter ${articleLabel} ${label.toLowerCase()}`,
-      deleteObjLabel: `Supprimer ${articleLabel} ${label.toLowerCase()}`,
-      detailObjLabel: `Detail ${articleDuLabel} ${label.toLowerCase()}`,
-    };
+    const lower = label.toLowerCase();
+    let labels = this.isEnglish()
+      ? {
+          label: label,
+          addObjLabel: `Add a new ${lower}`,
+          editObjLabel: `Edit the ${lower}`,
+          seeObjLabel: `View the ${lower}`,
+          deleteObjLabel: `Delete the ${lower}`,
+          detailObjLabel: `${label} details`,
+        }
+      : {
+          label: label,
+          addObjLabel: `Ajouter ${articleUndefLabel} ${nouveauLabel} ${label.toLowerCase()}`,
+          editObjLabel: `Editer ${articleLabel} ${label.toLowerCase()}`,
+          seeObjLabel: `Consulter ${articleLabel} ${label.toLowerCase()}`,
+          deleteObjLabel: `Supprimer ${articleLabel} ${label.toLowerCase()}`,
+          detailObjLabel: `Detail ${articleDuLabel} ${label.toLowerCase()}`,
+        };
 
     if (childObjectType) {
       const genreChild = this._configService.configModuleObjectParam(
@@ -131,7 +188,9 @@ export class ApiService<T = IObject> implements IService<T> {
         childObjectType,
         'label'
       );
-      if (labelChild) {
+      if (labelChild && this.isEnglish()) {
+        labels['addChildLabel'] = `Add a new ${labelChild.toLowerCase()}`;
+      } else if (labelChild) {
         labels['addChildLabel'] = `Ajouter ${Utils.labelArtUndef(genreChild)} ${Utils.labelNew(
           genreChild,
           labelChild
