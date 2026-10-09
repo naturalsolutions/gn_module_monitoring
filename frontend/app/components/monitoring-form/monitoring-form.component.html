@@ -24,7 +24,7 @@
         *ngIf="!obj.id && obj.config['chained']"
         id="toggle-btn"
         class="float-right"
-        matTooltip="Enchainer les saisies"
+        [matTooltip]="'Monitoring.Form.ChainEntries' | translate"
         matTooltipPosition="left"
       >
         <i class="fa fa-repeat" aria-hidden="true"></i>
@@ -139,7 +139,7 @@
         </button>
         <button
           mat-raised-button
-          [matTooltip]="canDelete ? null : toolTipNotAllowed"
+          [matTooltip]="(canDelete ? null : toolTipNotAllowed) | translate"
           [disabled]="!canDelete"
           color="warn"
           class="float-left"

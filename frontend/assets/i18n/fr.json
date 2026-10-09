@@ -1,56 +1,83 @@
 {
-    "Monitoring" : {
+    "Monitoring": {
         "Error": {
-            "Required" : "Ce champs est requis.",
-            "MinLength" : "Vous devez choisir au moins une valeur."
+            "Required": "Ce champs est requis.",
+            "MinLength": "Vous devez choisir au moins une valeur."
         },
-        "Export" : "Export HTML FICHE SITE",
+        "Export": "Export HTML FICHE SITE",
         "Module": {
-            "Loading" : "Chargement en cours",
-            "NoModule" : "Vous n'avez pas encore de protocole accessible",
-            "SiteManager" : "Gestionnaire de sites",
-            "SeeSites" : "Voir les sites et groupes de sites",
-            "ModulesList" : "Liste des protocoles",
-            "NotConfigured" : "Le module n'est pas encore configuré.",
-            "EditModule" : "Veuillez éditer le module et renseigner les champs requis.",
-            "Edit" : "Éditer ",
-            "UpdateSynth" : "Mettre à jour la synthèse",
-            "Downloads" : "Téléchargements",
-            "Download" : "Téléchargement"
+            "Loading": "Chargement en cours",
+            "NoModule": "Vous n'avez pas encore de protocole accessible",
+            "SiteManager": "Gestionnaire de sites",
+            "SeeSites": "Voir les sites et groupes de sites",
+            "ModulesList": "Liste des protocoles",
+            "NotConfigured": "Le module n'est pas encore configuré.",
+            "EditModule": "Veuillez éditer le module et renseigner les champs requis.",
+            "Edit": "Éditer ",
+            "UpdateSynth": "Mettre à jour la synthèse",
+            "Downloads": "Téléchargements",
+            "Download": "Téléchargement",
+            "SyntheseUpdated": "La synthèse a été mise à jour pour le module {{ module }}",
+            "SyntheseUpdateError": "Erreur lors de la mise à jour de la synthèse pour le module {{ module }} - {{ error }}"
         },
-        "DeletingPopup" : {
-            "Warning" : "Attention",
-            "WarningDelete" : "Vous êtes sur le point de supprimer : ",
-            "ConfirmDelete" : "Confirmer la suppression",
-            "Cancel" : "Annuler"
+        "DeletingPopup": {
+            "Warning": "Attention",
+            "WarningDelete": "Vous êtes sur le point de supprimer : ",
+            "ConfirmDelete": "Confirmer la suppression",
+            "Cancel": "Annuler"
         },
-        "Form" : {
-            "PickGeom" : " Veuillez saisir une géométrie sur la carte ",
-            "GrpSiteGeom" : "La géométrie de groupe site est actuellement auto-générée sur la base des sites enfants \n(si existants). Vous avez la possibilité de créer vous même une géométrie",
-            "AssignedFields" : "Champs associés au type: ",
-            "ValidateEnter" : "Valider et saisir des ",
-            "ValidateChain" : "Valider et enchainer les saisies",
-            "Validate" : "Valider",
-            "Cancel" : "Annuler",
-            "Delete" : "Supprimer",
-            "MissingPermissions" : "Vous n'avez pas les permissions nécessaires pour éditer l'objet"
+        "Form": {
+            "PickGeom": " Veuillez saisir une géométrie sur la carte ",
+            "GrpSiteGeom": "La géométrie de groupe site est actuellement auto-générée sur la base des sites enfants \n(si existants). Vous avez la possibilité de créer vous même une géométrie",
+            "AssignedFields": "Champs associés au type: ",
+            "ValidateEnter": "Valider et saisir des ",
+            "ValidateChain": "Valider et enchainer les saisies",
+            "Validate": "Valider",
+            "Cancel": "Annuler",
+            "Delete": "Supprimer",
+            "MissingPermissions": "Vous n'avez pas les permissions nécessaires pour éditer l'objet",
+            "ChainEntries": "Enchainer les saisies"
         },
-        "Properties" : {
-            "Properties" : "Propriétés",
-            "SpecificProperties" : "Propriétés spécifiques",
-            "DownloadJdd" : "Choisir un jeu de données à télécharger"
+        "Properties": {
+            "Properties": "Propriétés",
+            "SpecificProperties": "Propriétés spécifiques",
+            "DownloadJdd": "Choisir un jeu de données à télécharger",
+            "Media": "Médias ({{ n }})",
+            "LongOperation": "Attention, cette opération peux prendre du temps"
         },
-        "List" : {
-            "Add" : "Ajouter ",
-            "Cancel" : "Annuler",
-            "NoModules" : "Aucun protocole n'est disponible pour ce type de site"
+        "List": {
+            "Add": "Ajouter ",
+            "Cancel": "Annuler",
+            "NoModules": "Aucun protocole n'est disponible pour ce type de site"
         },
-        "Sites" : {
-            "addVisit" : "Ajouter une visite" 
+        "Sites": {
+            "addVisit": "Ajouter une visite",
+            "SelectProtocol": "Sélectionner le protocole"
         },
-        "Actions" : {
-            "Done" : " effectuée",
-            "Deleted" : "Suppression"
+        "Actions": {
+            "Done": " effectuée",
+            "Deleted": "Suppression",
+            "AddLabel": "Ajouter {{ label }}",
+            "EditLabel": "Editer {{ label }}",
+            "DeleteLabel": "Supprimer {{ label }}",
+            "ConsultLabel": "Consulter {{ label }}",
+            "Creation": "Création",
+            "Update": "Modification",
+            "Created": "Création effectuée",
+            "Updated": "Modification effectuée"
+        },
+        "Title": {
+            "Edit": "Modification {{ du }} {{ description }}",
+            "Create": "Création d'{{ undef }}",
+            "Details": "Détails {{ du }} {{ description }}"
+        },
+        "Permissions": {
+            "NotAllowed": "Vous n'avez pas les permissions nécessaires",
+            "HasChildren": "Vous ne pouvez pas supprimer cet objet car il a des enfants"
+        },
+        "Filters": {
+            "Show": "Afficher les filtres",
+            "Hide": "Cacher les filtres"
         }
     }
 }

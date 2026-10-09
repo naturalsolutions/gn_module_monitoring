@@ -1,3 +1,3 @@
-export const TOOLTIPMESSAGEALERT: string = "Vous n'avez pas les permissions nécessaires";
+export const TOOLTIPMESSAGEALERT: string = 'Monitoring.Permissions.NotAllowed';
 export const TOOLTIPMESSAGEALERT_CHILD: string =
-  'Vous ne pouvez pas supprimer cet objet car il a des enfants';
+  'Monitoring.Permissions.HasChildren';

@@ -113,6 +113,7 @@ export class MonitoringDatatableGComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.toolTipNotAllowed = this.translate.instant(TOOLTIPMESSAGEALERT);
     this.subscribeToParentEmitter();
     this.initDatatable();
     this.isImportDestinationAvailable();
@@ -369,13 +370,13 @@ export class MonitoringDatatableGComponent implements OnInit {
 
   msgToaster(action) {
     // return `${action} ${this.obj.labelDu()} ${this.obj.description()} effectuée`.trim();
-    return `${action}  effectuée`.trim();
+    return `${action}${this.translate.instant('Monitoring.Actions.Done')}`.trim();
   }
 
   onDelete(row) {
     this.bDeleteSpinner = true;
     row['id'] = row[row.pk];
-    this._commonService.regularToaster('info', this.msgToaster('Suppression'));
+    this._commonService.regularToaster('info', this.msgToaster(this.translate.instant('Monitoring.Actions.Deleted')));
     this.onDeleteEvent.emit({ rowSelected: row, objectType: this.activetabType });
   }
 

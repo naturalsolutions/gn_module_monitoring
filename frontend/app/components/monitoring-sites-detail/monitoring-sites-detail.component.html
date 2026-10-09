@@ -49,7 +49,7 @@
       Sinon dans le contexte d'un sous module on verifie la permission sur VISITES -->
   <option-list-btn
     add-button
-    placeholder="Sélectionner le protocole"
+    [placeholder]="'Monitoring.Sites.SelectProtocol' | translate"
     label="{{ 'Monitoring.Sites.addVisit' | translate }}"
     [optionList]="modules"
     (onDeployed)="getModules()"

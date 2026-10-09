@@ -60,7 +60,15 @@ export class MonitoringObjectBase {
     return s && s[0] && 'aeéiouy'.includes(s[0].toLowerCase());
   }
 
+  // articles français dérivés de label et genre, l'anglais n'a besoin que de the / of the / a new
+  isEnglish() {
+    return this._objService?.translate?.currentLang === 'en';
+  }
+
   labelArtDef() {
+    if (this.isEnglish()) {
+      return `the ${this.configParam('label').toLowerCase()}`;
+    }
     return (
       (this.testPremiereLettreVoyelle(this.configParam('label'))
         ? "l'"
@@ -71,6 +79,9 @@ export class MonitoringObjectBase {
   }
 
   labelDu() {
+    if (this.isEnglish()) {
+      return `of the ${this.configParam('label').toLowerCase()}`;
+    }
     const labelDu =
       (this.testPremiereLettreVoyelle(this.configParam('label'))
         ? "de l'"
@@ -82,6 +93,9 @@ export class MonitoringObjectBase {
 
   labelArtUndef() {
     const object_label = this.configParam('label').toLowerCase();
+    if (this.isEnglish()) {
+      return `a new ${object_label}`;
+    }
     let strNew = 'nouveau';
 
     if (this.configParam('genre') == 'F') {
@@ -283,11 +297,12 @@ export class MonitoringObjectBase {
 
   title(bEdit = false) {
     const description = this.description();
+    const translate = this._objService.translate;
     const text = bEdit
       ? this.id
-        ? `Modification ${this.labelDu()} ${description}`
-        : `Création d'${this.labelArtUndef()}`
-      : `Détails ${this.labelDu()} ${description}`;
+        ? translate.instant('Monitoring.Title.Edit', { du: this.labelDu(), description })
+        : translate.instant('Monitoring.Title.Create', { undef: this.labelArtUndef() })
+      : translate.instant('Monitoring.Title.Details', { du: this.labelDu(), description });
 
     return text.trim();
   }
@@ -300,11 +315,12 @@ export class MonitoringObjectBase {
   titleHTML(bEdit = false) {
     let description = this.description();
     description = description ? `<span class="obj-description">${description}</span>` : '';
+    const translate = this._objService.translate;
     const text = bEdit
       ? this.id
-        ? `Modification ${this.labelDu()} ${description}`
-        : `Création d'${this.labelArtUndef()}`
-      : `Détails ${this.labelDu()} ${description}`;
+        ? translate.instant('Monitoring.Title.Edit', { du: this.labelDu(), description })
+        : translate.instant('Monitoring.Title.Create', { undef: this.labelArtUndef() })
+      : translate.instant('Monitoring.Title.Details', { du: this.labelDu(), description });
 
     return text.trim();
   }

@@ -545,7 +545,9 @@ export class MonitoringFormComponent implements OnInit {
     const finalObject = Utils.mergeObjects(this.remainingTypeSiteProp, objFormValueGroup);
     this.isSiteObject ? (finalObject['types_site'] = Array.from(this.idsTypesSite)) : null;
     const action = this.obj.id ? this.obj.patch(finalObject) : this.obj.post(finalObject);
-    const actionLabel = this.obj.id ? 'Modification' : 'Création';
+    const actionLabel = this.translate.instant(
+      this.obj.id ? 'Monitoring.Actions.Update' : 'Monitoring.Actions.Creation'
+    );
     action.subscribe((objData) => {
       this._commonService.regularToaster('success', this.msgToaster(actionLabel));
       this.bSaveSpinner = this.bSaveAndAddChildrenSpinner = false;
@@ -719,7 +721,7 @@ export class MonitoringFormComponent implements OnInit {
   notAllowedMessage() {
     this._commonService.translateToaster(
       'warning',
-      "Vous n'avez pas les permissions nécessaires pour éditer l'objet"
+      'Monitoring.Form.MissingPermissions'
     );
   }
 

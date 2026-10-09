@@ -53,7 +53,7 @@
               color="accent"
               class="ml-2 mb-2"
               (click)="displayFilter = !displayFilter"
-              matTooltip="{{ displayFilter ? 'Cacher' : 'Afficher' }} les filtres"
+              [matTooltip]="(displayFilter ? 'Monitoring.Filters.Hide' : 'Monitoring.Filters.Show') | translate"
             >
               <i
                 class="fa fa-filter"
@@ -166,7 +166,7 @@
                   </ng-template>
                   <ng-template #chooseProtocolPopup>
                     <option-list-btn
-                      placeholder="Sélectionner le protocole"
+                      [placeholder]="'Monitoring.Sites.SelectProtocol' | translate"
                       label="{{ 'Monitoring.Sites.addVisit' | translate }}"
                       [iconOrButton]="icon"
                       [canCreateChild]="canCreateChild"

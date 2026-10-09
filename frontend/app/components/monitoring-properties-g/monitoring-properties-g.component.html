@@ -44,7 +44,7 @@
       <!-- TODO: tester l'ajout de médias et voir le comportement de obj.properties -->
       <mat-tab
         *ngIf="selectedObj.medias && selectedObj.medias.length > 0"
-        label="Médias ({{ (selectedObj.medias && selectedObj.medias.length) || 0 }})"
+        [label]="'Monitoring.Properties.Media' | translate: { n: selectedObj.medias?.length || 0 }"
       >
         <ng-container *ngFor="let media of selectedObj.medias; index as i">
           <div class="medias-tab">
@@ -90,7 +90,7 @@
         class="mr-2"
         (click)="canUpdateObj ? onEditClick() : null"
         *ngIf="!bEdit"
-        [matTooltip]="canUpdateObj ? null : toolTipNotAllowed"
+        [matTooltip]="(canUpdateObj ? null : toolTipNotAllowed) | translate"
       >
         {{ objectType.editObjLabel }}
       </button>
