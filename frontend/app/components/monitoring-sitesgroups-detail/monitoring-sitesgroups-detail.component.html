@@ -1,6 +1,6 @@
 <div>
   <span class="obj-title"
-    >{{ bEdit ?  _sitesGroupService.objectObs.editObjLabel : _sitesGroupService.objectObs.detailObjLabel }} :</span
+    >{{ bEdit ?  _sitesGroupService.objectObs.editObjLabel : _sitesGroupService.objectObs.detailObjLabel }}{{ 'ColonCharSpaced' | translate }}</span
   >
   <span *ngIf="sitesGroup" class="obj-description"> {{ sitesGroup.sites_group_name }} </span>
 </div>
