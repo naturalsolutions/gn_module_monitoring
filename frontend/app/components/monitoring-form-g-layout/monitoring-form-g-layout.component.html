@@ -37,7 +37,7 @@
         *ngIf="!object && config['chained']"
         id="toggle-btn"
         class="float-right"
-        matTooltip="Enchainer les saisies"
+        [matTooltip]="'Monitoring.Form.ChainEntries' | translate"
         matTooltipPosition="left"
       >
         <i
@@ -84,7 +84,7 @@
           color="primary"
           *ngIf="!chainInput && !object && config.children && addChildren"
           class="btn btn-success float-right mr-1"
-          [matTooltip]="canUpdate ? null : toolTipNotAllowed"
+          [matTooltip]="(canUpdate ? null : toolTipNotAllowed) | translate"
           (click)="canUpdate ? submitForm.emit(true) : notAllowed.emit()"
           [disabled]="!form.valid"
         >
@@ -101,7 +101,7 @@
           mat-raised-button
           color="primary"
           class="float-right mr-1"
-          [matTooltip]="canUpdate ? null : toolTipNotAllowed"
+          [matTooltip]="(canUpdate ? null : toolTipNotAllowed) | translate"
           (click)="canUpdate ? submitForm.emit(false) : notAllowed.emit()"
           [disabled]="!form.valid"
         >
@@ -128,7 +128,7 @@
         </button>
         <button
           mat-raised-button
-          [matTooltip]="canDelete ? null : toolTipNotAllowed"
+          [matTooltip]="(canDelete ? null : toolTipNotAllowed) | translate"
           [disabled]="!canDelete"
           color="warn"
           class="float-left"

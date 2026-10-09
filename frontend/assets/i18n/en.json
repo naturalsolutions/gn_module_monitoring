@@ -1,1 +1,83 @@
-{}
+{
+    "Monitoring": {
+        "Error": {
+            "Required": "This field is required.",
+            "MinLength": "You must choose at least one value."
+        },
+        "Export": "HTML export of the site sheet",
+        "Module": {
+            "Loading": "Loading",
+            "NoModule": "You do not have access to any protocol yet",
+            "SiteManager": "Site manager",
+            "SeeSites": "See sites and site groups",
+            "ModulesList": "Protocol list",
+            "NotConfigured": "The module is not configured yet.",
+            "EditModule": "Please edit the module and fill in the required fields.",
+            "Edit": "Edit ",
+            "UpdateSynth": "Update the synthesis",
+            "Downloads": "Downloads",
+            "Download": "Download",
+            "SyntheseUpdated": "The synthesis has been updated for the module {{ module }}",
+            "SyntheseUpdateError": "Error while updating the synthesis for the module {{ module }} - {{ error }}"
+        },
+        "DeletingPopup": {
+            "Warning": "Warning",
+            "WarningDelete": "You are about to delete: ",
+            "ConfirmDelete": "Confirm deletion",
+            "Cancel": "Cancel"
+        },
+        "Form": {
+            "PickGeom": " Please draw a geometry on the map ",
+            "GrpSiteGeom": "The site group geometry is currently generated from the child sites \n(if any). You can draw your own geometry",
+            "AssignedFields": "Fields of the type: ",
+            "ValidateEnter": "Validate and enter ",
+            "ValidateChain": "Validate and chain entries",
+            "Validate": "Validate",
+            "Cancel": "Cancel",
+            "Delete": "Delete",
+            "MissingPermissions": "You do not have the permissions required to edit this object",
+            "ChainEntries": "Chain entries"
+        },
+        "Properties": {
+            "Properties": "Properties",
+            "SpecificProperties": "Specific properties",
+            "DownloadJdd": "Choose a dataset to download",
+            "Media": "Media ({{ n }})",
+            "LongOperation": "Warning, this operation may take a while"
+        },
+        "List": {
+            "Add": "Add ",
+            "Cancel": "Cancel",
+            "NoModules": "No protocol is available for this site type"
+        },
+        "Sites": {
+            "addVisit": "Add a visit",
+            "SelectProtocol": "Select the protocol"
+        },
+        "Actions": {
+            "Done": " done",
+            "Deleted": "Deletion",
+            "AddLabel": "Add {{ label }}",
+            "EditLabel": "Edit {{ label }}",
+            "DeleteLabel": "Delete {{ label }}",
+            "ConsultLabel": "View {{ label }}",
+            "Creation": "Creation",
+            "Update": "Update",
+            "Created": "Created",
+            "Updated": "Updated"
+        },
+        "Title": {
+            "Edit": "Editing {{ du }} {{ description }}",
+            "Create": "Creating {{ undef }}",
+            "Details": "Details {{ du }} {{ description }}"
+        },
+        "Permissions": {
+            "NotAllowed": "You do not have the required permissions",
+            "HasChildren": "You cannot delete this object because it has children"
+        },
+        "Filters": {
+            "Show": "Show filters",
+            "Hide": "Hide filters"
+        }
+    }
+}

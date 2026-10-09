@@ -65,7 +65,7 @@
     </mat-tab>
     <mat-tab
       *ngIf="obj['medias'] && obj['medias'].length"
-      label="Médias ({{ (obj['medias'] && obj['medias'].length) || 0 }})"
+      [label]="'Monitoring.Properties.Media' | translate: { n: obj['medias']?.length || 0 }"
     >
       <ng-container *ngFor="let media of obj['medias']; index as i">
         <div class="medias-tab">
@@ -118,7 +118,7 @@
       color="primary"
       class="mr-2"
       (click)="hasEditPermission ? onEditClick() : null"
-      [matTooltip]="hasEditPermission() ? null : toolTipNotAllowed"
+      [matTooltip]="(hasEditPermission() ? null : toolTipNotAllowed) | translate"
       [disabled]="!hasEditPermission"
     >
       {{ 'Monitoring.Module.Edit' | translate }}
@@ -150,7 +150,7 @@
       *ngIf="
         objectType === 'module' && userPermission.module.U >= 1 && bSynthese
       "
-      matTooltip="Attention, cette opération peux prendre du temps"
+      [matTooltip]="'Monitoring.Properties.LongOperation' | translate"
     >
       <span
         [ngClass]="{ 'hide-spinner': !bUpdateSyntheseSpinner }"
@@ -220,7 +220,7 @@
             color="primary"
             (click)="getExportCsv(exp, this.selectedDataSet[i])"
             type="button"
-            matTooltip="Télécharger"
+            [matTooltip]="'Actions.Download' | translate"
             [disabled]="exp.filter_dataset && !selectedDataSet[i]"
           >
             {{ 'Monitoring.Module.Download' | translate }}

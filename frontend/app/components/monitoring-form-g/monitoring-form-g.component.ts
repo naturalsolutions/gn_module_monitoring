@@ -247,10 +247,7 @@ export class MonitoringFormGComponent implements OnInit, AfterViewInit {
   }
 
   notAllowedMessage() {
-    this._commonService.translateToaster(
-      'warning',
-      "Vous n'avez pas les permissions nécessaires pour éditer l'objet"
-    );
+    this._commonService.translateToaster('warning', 'Monitoring.Form.MissingPermissions');
   }
 
   onSubmit(isAddChildrend = false) {
@@ -265,15 +262,15 @@ export class MonitoringFormGComponent implements OnInit, AfterViewInit {
         this.object[this.object.pk],
         this.formatForApi(formValueGroup)
       );
-      actionLabel = 'Modification';
+      actionLabel = 'Monitoring.Actions.Updated';
     } else {
       action = this.apiService.create(this.formatForApi(formValueGroup));
-      actionLabel = 'Création';
+      actionLabel = 'Monitoring.Actions.Created';
     }
 
     action.subscribe((objData) => {
       this.object = objData;
-      this._commonService.regularToaster('success', actionLabel);
+      this._commonService.translateToaster('success', actionLabel);
       this.saveSpinner = this.saveAndAddChildrenSpinner = false;
       /** si c'est un module : reset de la config */
       // if (this.obj.objectType === 'module') {

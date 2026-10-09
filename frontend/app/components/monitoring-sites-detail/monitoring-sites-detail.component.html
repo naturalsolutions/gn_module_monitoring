@@ -32,7 +32,7 @@
       dans le module generic le bouton est toujours actif c'est la liste des modules disponibles à l'utilisateur qui determinera les permissions
       Sinon dans le contexte d'un sous module on verifie la permission sur VISITES -->
   <option-list-btn add-button
-    placeholder="Sélectionner le protocole"
+    [placeholder]="'Monitoring.Sites.SelectProtocol' | translate"
     *ngIf="moduleCode === 'generic'"
     label="{{ 'Monitoring.Sites.addVisit' | translate }}"
     [optionList]="modules"

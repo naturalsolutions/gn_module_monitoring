@@ -124,6 +124,7 @@ export class MonitoringDatatableGComponent implements OnInit {
     this.labelEdit = this._translate.instant('Actions.Edit');
     this.labelDelete = this._translate.instant('Actions.Delete');
     this.labelAdd = this._translate.instant('Actions.Add');
+    this.toolTipNotAllowed = this._translate.instant(TOOLTIPMESSAGEALERT);
 
     this.subscribeToParentEmitter();
     this.initDatatable();
@@ -331,13 +332,16 @@ export class MonitoringDatatableGComponent implements OnInit {
   }
 
   msgToaster(action) {
-    return `${action}  effectuée`.trim();
+    return `${action}${this._translate.instant('Monitoring.Actions.Done')}`.trim();
   }
 
   onDelete(row) {
     this.bDeleteSpinner = true;
     row['id'] = row[row.pk];
-    this._commonService.regularToaster('info', this.msgToaster('Suppression'));
+    this._commonService.regularToaster(
+      'info',
+      this.msgToaster(this._translate.instant('Monitoring.Actions.Deleted'))
+    );
     this.onDeleteEvent.emit({ rowSelected: row, objectType: this.activetabType });
   }
 

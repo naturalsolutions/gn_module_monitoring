@@ -8,6 +8,7 @@ import { DataUtilsService } from './data-utils.service';
 import { Utils } from '../utils/utils';
 import { mergeMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable()
 export class MonitoringObjectService {
@@ -15,7 +16,8 @@ export class MonitoringObjectService {
     private _configService: ConfigService,
     private _dataMonitoringObjectService: DataMonitoringObjectService,
     private _dataUtilsService: DataUtilsService,
-    private _router: Router
+    private _router: Router,
+    public translate: TranslateService
   ) {}
 
   _cache = {};

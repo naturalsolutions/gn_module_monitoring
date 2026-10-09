@@ -50,7 +50,7 @@
     </mat-tab>
     <mat-tab
       *ngIf="obj.properties['medias'] && obj.properties['medias'].length"
-      label="Médias ({{ (obj.properties['medias'] && obj.properties['medias'].length) || 0 }})"
+      [label]="'Monitoring.Properties.Media' | translate: { n: obj.properties['medias']?.length || 0 }"
     >
 
       <ng-container *ngFor="let media of obj.properties['medias']; index as i">
@@ -99,7 +99,7 @@
       class="mr-2"
       (click)="initPermission() ? onEditClick() : null"
       *ngIf="!bEdit"
-      [matTooltip]="initPermission() ? null : toolTipNotAllowed"
+      [matTooltip]="(initPermission() ? null : toolTipNotAllowed) | translate"
       [disabled]="!initPermission()"
     >
       {{ 'Monitoring.Module.Edit' | translate }}{{ obj.template['label_art_def'] || '' }}
@@ -131,7 +131,7 @@
         currentUser?.moduleCruved.module.U >= 1 &&
         obj.properties['b_synthese']
       "
-      matTooltip="Attention, cette opération peux prendre du temps"
+      [matTooltip]="'Monitoring.Properties.LongOperation' | translate"
     >
       <span
         [ngClass]="{ 'hide-spinner': !bUpdateSyntheseSpinner }"
@@ -188,7 +188,7 @@
             color="primary"
             (click)="getExportCsv(obj.template['export_csv'][i], this.selectedDataSet[i])"
             type="button"
-            matTooltip="Télécharger"
+            [matTooltip]="'Actions.Download' | translate"
             [disabled]="obj.template['export_csv'][i].filter_dataset && !selectedDataSet[i]"
           >
             {{ 'Monitoring.Module.Download' | translate }}

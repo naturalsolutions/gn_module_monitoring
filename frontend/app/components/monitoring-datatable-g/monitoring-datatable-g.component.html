@@ -55,7 +55,7 @@
               color="accent"
               class="ml-2 mb-2 mt-2"
               (click)="displayFilter = !displayFilter"
-              matTooltip="{{ displayFilter ? 'Cacher' : 'Afficher' }} les filtres"
+              [matTooltip]="(displayFilter ? 'Monitoring.Filters.Hide' : 'Monitoring.Filters.Show') | translate"
             >
               <i
                 class="fa fa-filter"
