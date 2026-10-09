@@ -1,5 +1,6 @@
 from flask import json
 
+from flask_babel import lazy_gettext as _l
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.form import fields
 
@@ -25,7 +26,7 @@ class Unique:
         self.field = field
         self.compare_field = compare_field
         if not message:
-            message = "A type is already created with this nomenclature"
+            message = _l("A type is already created with this nomenclature")
         self.message = message
 
     def __call__(self, form, field):
@@ -76,9 +77,9 @@ class BibTypeSiteView(CruvedProtectedMixin, ModelView):
         return model.nomenclature.label_fr
 
     # Nom de colonne user friendly
-    column_labels = dict(nomenclature="Types de site")
+    column_labels = dict(nomenclature=_l("Types de site"))
     # Description des colonnes
-    column_descriptions = dict(nomenclature="Nomenclature de type de site à choisir")
+    column_descriptions = dict(nomenclature=_l("Nomenclature de type de site à choisir"))
 
     column_hide_backrefs = False
 

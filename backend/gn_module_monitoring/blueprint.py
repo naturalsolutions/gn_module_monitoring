@@ -3,6 +3,7 @@ blueprint
 charge les routes présentes dans le dossier route
 """
 
+from flask_babel import lazy_gettext as _l
 from flask import Blueprint, current_app, g, request
 from urllib.parse import urlparse, parse_qs
 
@@ -79,4 +80,4 @@ blueprint.cli.short_help = "Commandes pour l" "administration du module MONITORI
 for cmd in commands:
     blueprint.cli.add_command(cmd)
 
-flask_admin.add_view(BibTypeSiteView(DB, name="Types de site", category="Monitorings"))
+flask_admin.add_view(BibTypeSiteView(DB, name=_l("Types de site"), category="Monitorings"))
