@@ -43,16 +43,21 @@
             "SpecificProperties": "Propriétés spécifiques",
             "DownloadJdd": "Choisir un jeu de données à télécharger",
             "Media": "Médias ({{ n }})",
-            "LongOperation": "Attention, cette opération peux prendre du temps"
+            "LongOperation": "Attention, cette opération peux prendre du temps",
+            "PdfReady": "L'export PDF est prêt à être récupéré dans le dossier de Téléchargement",
+            "PdfError": "Une erreur est survenue durant l'export PDF"
         },
         "List": {
             "Add": "Ajouter ",
             "Cancel": "Annuler",
-            "NoModules": "Aucun protocole n'est disponible pour ce type de site"
+            "NoModules": "Aucun protocole n'est disponible pour ce type de site",
+            "NoData": "Pas de données disponibles"
         },
         "Sites": {
             "addVisit": "Ajouter une visite",
-            "SelectProtocol": "Sélectionner le protocole"
+            "SelectProtocol": "Sélectionner le protocole",
+            "SiteTypesTitle": "Choix des types de sites",
+            "SiteTypesPlaceholder": "Sélectionnez les types de site"
         },
         "Actions": {
             "Done": " effectuée",

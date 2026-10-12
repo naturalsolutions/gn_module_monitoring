@@ -30,8 +30,8 @@ export class MonitoringSitesCreateComponent implements OnInit {
   objForm: FormGroup;
   paramToFilt: string = 'label';
   funcToFilt: Function;
-  titleBtn: string = 'Choix des types de sites';
-  placeholderText: string = 'Sélectionnez les types de site';
+  titleBtn: string;
+  placeholderText: string;
   id_sites_group: number | null;
   types_site: string[];
   config: JsonData;
@@ -58,6 +58,9 @@ export class MonitoringSitesCreateComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    const translate = this._monitoringObjServiceMonitoring.translate;
+    this.titleBtn = translate.instant('Monitoring.Sites.SiteTypesTitle');
+    this.placeholderText = translate.instant('Monitoring.Sites.SiteTypesPlaceholder');
     const idSitesGroup = this._route.snapshot.data.createSite.id_sites_group;
     this.moduleCode = this._route.snapshot.data.createSite.moduleCode;
 
