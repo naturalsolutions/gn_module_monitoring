@@ -11,6 +11,7 @@ import { TOOLTIPMESSAGEALERT } from '../../constants/guard';
 import { TemplateData } from '../../interfaces/template';
 import { PermissionService } from '../../services/permission.service';
 import { FormService } from '../../services/form.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'pnx-monitoring-properties-g',
@@ -42,7 +43,8 @@ export class MonitoringPropertiesGComponent implements OnInit {
     public ngbModal: NgbModal,
     public mapservice: MapService,
     public permissionService: PermissionService,
-    private _formService: FormService
+    private _formService: FormService,
+    private _translate: TranslateService
   ) {}
 
   ngOnInit() {
@@ -113,7 +115,7 @@ export class MonitoringPropertiesGComponent implements OnInit {
             element.classList[0] == 'leaflet-control-zoom-out' ||
             element.classList[0] == 'leaflet-control-layers-toggle' ||
             element.title == 'A JS library for interactive maps' ||
-            element.placeholder == 'Rechercher un lieu'
+            element.placeholder == $this._translate.instant('Map.Actions.SearchLocation')
           );
         },
         logging: false,
@@ -134,14 +136,11 @@ export class MonitoringPropertiesGComponent implements OnInit {
             extra_data
           )
           .subscribe(() => {
-            $this._commonService.regularToaster(
-              'success',
-              "L'export PDF est prêt à être récupéré dans le dossier de Téléchargement"
-            );
+            $this._commonService.translateToaster('success', 'Monitoring.Properties.PdfReady');
           });
       });
     } catch {
-      $this._commonService.regularToaster('error', "Une erreur est survenue durant l'export PDF");
+      $this._commonService.translateToaster('error', 'Monitoring.Properties.PdfError');
     }
   }
 }

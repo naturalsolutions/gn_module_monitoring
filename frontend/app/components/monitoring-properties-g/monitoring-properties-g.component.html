@@ -78,7 +78,7 @@
             </a>
             <i>
               ({{ ms.typeMedia(media) }}
-              <span *ngIf="media.author">par {{ media.author }}</span>
+              <span *ngIf="media.author">{{ 'Monitoring.Properties.ByAuthor' | translate: { author: media.author } }}</span>
               )
             </i>
           </div>

@@ -18,7 +18,8 @@
             "Downloads": "Téléchargements",
             "Download": "Téléchargement",
             "SyntheseUpdated": "La synthèse a été mise à jour pour le module {{ module }}",
-            "SyntheseUpdateError": "Erreur lors de la mise à jour de la synthèse pour le module {{ module }} - {{ error }}"
+            "SyntheseUpdateError": "Erreur lors de la mise à jour de la synthèse pour le module {{ module }} - {{ error }}",
+            "CodeTooltip": "code : {{ code }}"
         },
         "DeletingPopup": {
             "Warning": "Attention",
@@ -45,7 +46,8 @@
             "Media": "Médias ({{ n }})",
             "LongOperation": "Attention, cette opération peux prendre du temps",
             "PdfReady": "L'export PDF est prêt à être récupéré dans le dossier de Téléchargement",
-            "PdfError": "Une erreur est survenue durant l'export PDF"
+            "PdfError": "Une erreur est survenue durant l'export PDF",
+            "ByAuthor": "par {{ author }}"
         },
         "List": {
             "Add": "Ajouter ",
