@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from flask import current_app
+from flask_babel import gettext
 from sqlalchemy import and_, select
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -122,12 +123,31 @@ def json_from_file(file_path, result_default={}):
     return out
 
 
+# libellés écrits en français dans la config generic, traduits par le catalogue de GeoNature
+GENERIC_LABEL_KEYS = ("attribut_label", "definition", "label", "label_list")
+
+
+def translate_generic_labels(config):
+    if isinstance(config, dict):
+        return {
+            key: (
+                gettext(value)
+                if key in GENERIC_LABEL_KEYS and isinstance(value, str) and value
+                else translate_generic_labels(value)
+            )
+            for key, value in config.items()
+        }
+    if isinstance(config, list):
+        return [translate_generic_labels(value) for value in config]
+    return config
+
+
 def json_config_from_file(module_code, type_config):
     if module_code == "generic":
         config_txt = importlib.resources.read_text(
             "gn_module_monitoring.config.generic", f"{type_config}.json"
         )
-        return json.loads(config_txt)
+        return translate_generic_labels(json.loads(config_txt))
 
     file_path = monitoring_module_config_path(module_code) / f"{type_config}.json"
     return json_from_file(file_path, {})
