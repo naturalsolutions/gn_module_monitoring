@@ -43,12 +43,15 @@
             "SpecificProperties": "Specific properties",
             "DownloadJdd": "Choose a dataset to download",
             "Media": "Media ({{ n }})",
-            "LongOperation": "Warning, this operation may take a while"
+            "LongOperation": "Warning, this operation may take a while",
+            "PdfReady": "The PDF export is ready in your Downloads folder",
+            "PdfError": "An error occurred during the PDF export"
         },
         "List": {
             "Add": "Add ",
             "Cancel": "Cancel",
-            "NoModules": "No protocol is available for this site type"
+            "NoModules": "No protocol is available for this site type",
+            "NoData": "No data available"
         },
         "Sites": {
             "addVisit": "Add a visit",
