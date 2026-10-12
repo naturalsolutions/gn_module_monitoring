@@ -1,5 +1,5 @@
 .flex-container {
-  background-color: rgb(240, 240, 240);
+  background-color: var(--gn-app-bg);
   display: flex;
 }
 
@@ -18,9 +18,9 @@
 }
 
 :host ::ng-deep .cadre {
-  background-color: white;
+  background-color: var(--gn-surface);
   /* border: 1px solid grey;*/
-  border-radius: 5px;
+  border-radius: var(--gn-radius-lg);
   padding: 5px;
   margin: 5px;
   /* display: inline-block; */
@@ -32,19 +32,15 @@
   cursor: pointer;
 }
 
-:host::ng-deep .datatable-body-row.active .datatable-row-group {
-  background-color: rgb(117, 227, 118) !important;
-}
-
 .link:hover {
-  background-color: rgba(0, 0, 0, 0.2) !important;
+  background-color: var(--gn-teal-50);
   transition: background-color 0.5;
 }
 
 .link {
   display: inline;
   transition: background-color 0.5s;
-  border-radius: 5px;
+  border-radius: var(--gn-radius);
 }
 
 .header-filter-span > input {
@@ -60,7 +56,7 @@
 }
 
 .header-sort-span:hover {
-  background-color: rgb(245, 245, 245);
+  background-color: var(--gn-hover);
 }
 
 .icon-sort {

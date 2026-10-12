@@ -30,6 +30,7 @@
                 class="ml-2 mb-2"
                 (click)="child0.config['display_filter'] = !child0.config['display_filter']"
                 [matTooltip]="(child0.config['display_filter'] ? 'Monitoring.Filters.Hide' : 'Monitoring.Filters.Show') | translate"
+                [attr.aria-label]="(child0.config['display_filter'] ? 'Monitoring.Filters.Hide' : 'Monitoring.Filters.Show') | translate"
                 *ngIf="obj.moduleCode && currentUser.moduleCruved[child0.objectType].R >= 1"
               >
                 <mat-icon>filter_alt</mat-icon>

@@ -2,20 +2,20 @@
   cursor: pointer;
 }
 
-:host::ng-deep .datatable-body-row.active .datatable-row-group {
-  background-color: rgb(117, 227, 118) !important;
-}
-
 .link:hover {
-  background-color: rgba(0, 0, 0, 0.2) !important;
+  background-color: var(--gn-teal-50);
   transition: background-color 0.5;
 }
 
 .link {
   display: inline;
   transition: background-color 0.5s;
-  border-radius: 5px;
-  padding: 0.5rem;
+  border: 0;
+  background: none;
+  color: inherit;
+  border-radius: var(--gn-radius);
+  /* vertical padding on a button would grow the line box and push the icons below the row text */
+  padding: 0 0.5rem;
 }
 
 .header-filter-span > input {
@@ -23,7 +23,14 @@
 }
 
 .header-sort-span {
-  /* width: 100%; */
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   cursor: pointer;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -31,7 +38,7 @@
 }
 
 .header-sort-span:hover {
-  background-color: rgb(245, 245, 245);
+  background-color: var(--gn-hover);
 }
 
 .icon-sort {
@@ -48,10 +55,6 @@
 }
 
 /*  */
-
-.object-link:hover {
-  color: lightblue;
-}
 
 .btn-height {
   height: 40px;
@@ -77,5 +80,5 @@ button:disabled {
 
 .isDisableIcon {
   opacity: 90%;
-  color: gray;
+  color: var(--gn-gray);
 }

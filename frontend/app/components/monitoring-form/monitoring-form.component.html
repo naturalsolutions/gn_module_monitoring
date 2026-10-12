@@ -30,6 +30,7 @@
         <i class="fa fa-repeat" aria-hidden="true"></i>
         <mat-slide-toggle
           color="primary"
+          [aria-label]="'Monitoring.Form.ChainEntries' | translate"
           [(ngModel)]="bChainInput"
           (change)="bChainInputChanged($event)"
         >
@@ -134,7 +135,7 @@
           <span *ngIf="!bChainInput || obj.id">{{ 'Monitoring.Form.Validate' | translate }}</span>
         </button>
 
-        <button mat-raised-button color="warn" class="float-left" (click)="onCancelEdit()">
+        <button mat-raised-button class="float-left" (click)="onCancelEdit()">
           {{ 'Monitoring.Form.Cancel' | translate }}
         </button>
         <button

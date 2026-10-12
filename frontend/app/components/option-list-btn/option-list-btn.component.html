@@ -3,6 +3,7 @@
     [ngClass]="{ isDisableBtn: !canCreateChild }"
     class="icon-btn"
     [matTooltip]="label"
+    [attr.aria-label]="label"
     (click)="canCreateChild ? onDeploy() : null"
     #ddTrigger="matMenuTrigger"
     [matMenuTriggerFor]="canCreateChild ? dd :null"

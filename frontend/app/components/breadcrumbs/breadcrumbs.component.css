@@ -7,7 +7,10 @@
 
 .breadcrumbs .link {
   cursor: pointer;
-  color: rgb(0, 123, 255);
+  color: var(--gn-teal-700);
+  padding: 0;
+  border: 0;
+  background: none;
 }
 
 .breadcrumbs .link:hover {

@@ -115,7 +115,7 @@
         class="mr-2"
         *ngIf="currentUser?.moduleCruved['module'].E >= 1"
       >
-        <i class="fa fa-file-pdf-o"></i>&nbsp;
+        <i class="fa fa-file-pdf-o" aria-hidden="true"></i>&nbsp;
         {{ exportPdfConfig.label }}
       </button>
     </span>
@@ -151,7 +151,7 @@
       color="primary"
       (click)="openModalExportCsv($event, modalExportCsv)"
     >
-      <i class="fa fa-arrow-down"></i>&nbsp;{{ 'Monitoring.Module.Downloads' | translate }}
+      <i class="fa fa-arrow-down" aria-hidden="true"></i>&nbsp;{{ 'Monitoring.Module.Downloads' | translate }}
     </button>
   </div>
 </div>

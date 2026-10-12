@@ -3,7 +3,7 @@ h1, h2 {
 }
 
 .modules {
-  background-color: white;
+  background-color: var(--gn-surface);
   min-height: 90vh;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -16,7 +16,7 @@ h1, h2 {
 
 a {
   text-decoration: none;
-  color: initial;
+  color: var(--gn-text);
 }
 
 
@@ -26,11 +26,11 @@ a {
 
 .module-card:hover {
   transition: 0.1s ease;
-  background-color: rgba(121, 116, 116, 0.137);
+  background-color: var(--gn-hover);
 }
 
 .card-body {
-  border-top: solid 1px rgb(211, 206, 206);
+  border-top: solid 1px var(--gn-divider);
 }
 
 .card-img-top {

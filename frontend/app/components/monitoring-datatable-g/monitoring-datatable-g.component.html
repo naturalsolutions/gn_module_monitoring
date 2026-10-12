@@ -54,6 +54,7 @@
               class="ml-2 mb-2"
               (click)="displayFilter = !displayFilter"
               [matTooltip]="(displayFilter ? 'Monitoring.Filters.Hide' : 'Monitoring.Filters.Show') | translate"
+              [attr.aria-label]="(displayFilter ? 'Monitoring.Filters.Hide' : 'Monitoring.Filters.Show') | translate"
             >
               <i
                 class="fa fa-filter"
@@ -123,22 +124,25 @@
                 [cellClass]="'cell-link'"
                 prop="Action"
                 class="object-link"
+                [minWidth]="130"
               >
                 <ng-template
                   let-row="row"
                   let-value="value"
                   ngx-datatable-cell-template
                 >
-                  <a
+                  <button
+                    type="button"
                     class="nav-link link cell-link"
                     (click)="navigateToDetail(row)"
                     matTooltip="{{ dataTableConfig[i].seeObjLabel }}"
+                    [attr.aria-label]="dataTableConfig[i].seeObjLabel"
                   >
                     <i
                       class="fa fa-eye"
                       aria-hidden="true"
                     ></i>
-                  </a>
+                  </button>
                   <!-- TODO Action Column :  Changer ngIf, click function, matTooltip // voir comment adapter à ce qu'il y avait avant :  *ngIf="child0.child0()"" et dans la function `child0.child0().labelArtUndef(true)` -->
 
                   <ng-template
@@ -146,7 +150,8 @@
                     [ngIfElse]="chooseProtocolPopup"
                   >
                     <ng-container *ngIf="!(dataTableConfig[i].childType == 'observation')">
-                      <a
+                      <button
+                        type="button"
                         [ngClass]="{ isDisableBtn: !canCreateChild }"
                         class="nav-link link cell-link"
                         (click)="
@@ -155,13 +160,16 @@
                         [matTooltip]="
                           canCreateChild ? dataTableConfig[i].addChildLabel : toolTipNotAllowed
                         "
+                        [attr.aria-label]="
+                          canCreateChild ? dataTableConfig[i].addChildLabel : toolTipNotAllowed
+                        "
                       >
                         <i
                           [ngClass]="{ isDisableIcon: !canCreateChild }"
                           class="fa fa-plus"
                           aria-hidden="true"
                         ></i>
-                      </a>
+                      </button>
                     </ng-container>
                   </ng-template>
                   <ng-template #chooseProtocolPopup>
@@ -176,11 +184,15 @@
                     ></option-list-btn>
                   </ng-template>
                   <!--  -->
-                  <a
+                  <button
+                    type="button"
                     [ngClass]="{ isDisableBtn: !row.cruved['U'] }"
                     class="nav-link link cell-link"
                     (click)="row.cruved['U'] ? editSelectedItem(row) : null"
                     [matTooltip]="
+                      row.cruved['U'] ? dataTableConfig[i].editObjLabel : toolTipNotAllowed
+                    "
+                    [attr.aria-label]="
                       row.cruved['U'] ? dataTableConfig[i].editObjLabel : toolTipNotAllowed
                     "
                   >
@@ -189,7 +201,7 @@
                       class="fa fa-edit"
                       aria-hidden="true"
                     ></i>
-                  </a>
+                  </button>
 
                   <!-- On ne peut supprimer un objet que s'il n'a pas d'enfant -->
                   <ng-container
@@ -200,11 +212,15 @@
                         0) == 0
                     "
                   >
-                    <a
+                    <button
+                      type="button"
                       [ngClass]="{ isDisableBtn: !row.cruved['D'] }"
                       class="nav-link link cell-link"
                       (click)="row.cruved['D'] ? alertMessage(row) : null"
                       [matTooltip]="
+                        row.cruved['D'] ? dataTableConfig[i].deleteObjLabel : toolTipNotAllowed
+                      "
+                      [attr.aria-label]="
                         row.cruved['D'] ? dataTableConfig[i].deleteObjLabel : toolTipNotAllowed
                       "
                     >
@@ -213,7 +229,7 @@
                         class="fa fa-trash"
                         aria-hidden="true"
                       ></i>
-                    </a>
+                    </button>
                   </ng-container>
                 </ng-template>
               </ngx-datatable-column>
@@ -233,7 +249,8 @@
               let-sortDir="sortDir"
               let-sortFn="sortFn"
             >
-              <div
+              <button
+                type="button"
                 class="header-sort-span"
                 (click)="sortFn()"
               >
@@ -258,7 +275,7 @@
                 >
                   {{ column.name }}
                 </span>
-              </div>
+              </button>
               <div class="header-filter-span">
                 <input
                   *ngIf="displayFilter"

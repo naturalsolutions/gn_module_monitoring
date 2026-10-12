@@ -9,8 +9,8 @@
 }
 
 .cmodal-background {
-  background-color: lightgray;
-  opacity: 0.5;
+  background-color: var(--gn-app-bg);
+  opacity: 0.7;
 }
 
 .cmodal-flex {
@@ -23,12 +23,11 @@
 
 .cmodal-content {
   z-index: 10001;
-  background-color: whitesmoke;
-  opacity: 0.9;
-  box-shadow: 0px 0px 5px black;
-  border-radius: 10px;
-  padding: 10px;
-  border: 5px lightgray solid;
+  background-color: var(--gn-surface);
+  box-shadow: var(--gn-shadow-overlay);
+  border-radius: var(--gn-radius-lg);
+  padding: 16px 24px;
+  border: 1px solid var(--gn-divider);
 }
 
 .hide-modal {

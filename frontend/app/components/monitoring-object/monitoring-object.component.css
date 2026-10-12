@@ -1,5 +1,5 @@
 .flex-container {
-  background-color: rgb(240, 240, 240);
+  background-color: var(--gn-app-bg);
   display: flex;
 }
 
@@ -17,14 +17,6 @@
   font-size: small;
 }
 
-.msg-warning {
-  color: darkorange;
-}
-
-.msg-error {
-  color: darkred;
-}
-
 .obj-title {
   font-size: 1.75rem;
   padding: 5px 15px;
@@ -36,17 +28,12 @@
 }
 
 :host ::ng-deep .cadre {
-  background-color: white;
+  background-color: var(--gn-surface);
   /* border: 1px solid grey;*/
-  border-radius: 5px;
+  border-radius: var(--gn-radius-lg);
   padding: 5px;
   margin: 5px;
   /* display: inline-block; */
-}
-
-.debug {
-  font-size: small;
-  background-color: lightgray;
 }
 
 /* :host ::ng-deep h3 {
