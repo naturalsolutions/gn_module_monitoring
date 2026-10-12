@@ -5,6 +5,7 @@ module de gestion de la configuarion des protocoles de suivi
 import os
 
 from flask import current_app
+from flask_babel import gettext
 
 from gn_module_monitoring.config.utils import (
     customize_config,
@@ -116,7 +117,7 @@ def config_object_from_files(module_code, object_type, custom=None):
     if module_code == "generic" and object_type == "site":
         generic_config_object["generic"]["types_site"] = {
             "type_widget": "datalist",
-            "attribut_label": "Type(s) de site",
+            "attribut_label": gettext("Type(s) de site"),
             "type_util": "types_site",
             "keyValue": "id_nomenclature_type_site",
             "keyLabel": "label",

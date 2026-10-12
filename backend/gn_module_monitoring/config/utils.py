@@ -212,7 +212,7 @@ def process_schema(object_type, config):
     # définition spécifique du datalist récupérée depuis la constante SITES_GROUP_CONFIG
     if object_type == "site" and "sites_group" in extract_keys(config["tree"]):
         if not "id_sites_group" in generic.keys():
-            generic.update({"id_sites_group": SITES_GROUP_CONFIG.copy()})
+            generic.update({"id_sites_group": translate_generic_labels(SITES_GROUP_CONFIG)})
 
     # Traitement des elements du formulaires
     # 3 cas possibles:
