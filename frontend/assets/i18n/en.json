@@ -83,6 +83,10 @@
         "Filters": {
             "Show": "Show filters",
             "Hide": "Hide filters"
+        },
+        "Map": {
+            "SitesLayer": "Sites",
+            "SitesGroupLayer": "Site groups"
         }
     }
 }

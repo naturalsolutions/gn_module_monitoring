@@ -34,6 +34,7 @@ const EN_LABELS = {
     seeObjLabel: 'View the site group',
     addChildLabel: 'Add a site',
     deleteObjLabel: 'Delete the site group',
+    labelList: 'Site groups',
   },
   site: {
     label: 'site',
@@ -43,6 +44,7 @@ const EN_LABELS = {
     seeObjLabel: 'View the site',
     deleteObjLabel: 'Delete the site',
     addChildLabel: 'Add a visit',
+    labelList: 'Sites',
   },
   visit: {
     label: 'visit',
@@ -52,6 +54,7 @@ const EN_LABELS = {
     detailObjLabel: 'Visit details',
     addChildLabel: 'Add an observation',
     deleteObjLabel: 'Delete the visit',
+    labelList: 'Visits',
   },
   individual: {
     label: 'individual',
@@ -61,6 +64,7 @@ const EN_LABELS = {
     seeObjLabel: 'View the individual',
     addChildLabel: 'Add a marking',
     deleteObjLabel: 'Delete the individual',
+    labelList: 'Individuals',
   },
 };
 
@@ -78,6 +82,12 @@ export class ApiService<T = IObject> implements IService<T> {
 
   protected isEnglish(): boolean {
     return this._monitoringObjectService?.translate?.currentLang === 'en';
+  }
+
+  protected genericEnLabels() {
+    return this.isEnglish() && this.objectObs.moduleCode === 'generic'
+      ? EN_LABELS[this.objectObs.objectType]
+      : null;
   }
 
   init(endPoint: endPoints, objectObjs: IobjObs<T>) {
@@ -136,7 +146,9 @@ export class ApiService<T = IObject> implements IService<T> {
         this.objectObs.template.fieldDefinitions = fieldDefinitions;
         this.objectObs.template.fieldNamesList = fieldNamesList;
 
-        if (labelList != undefined) {
+        if (this.genericEnLabels()) {
+          this.objectObs.template.labelList = this.genericEnLabels().labelList;
+        } else if (labelList != undefined) {
           this.objectObs.template.labelList = labelList;
         }
         this.objectObs.dataTable.colNameObj = Utils.toObject(fieldNamesList, fieldLabels);
@@ -158,6 +170,10 @@ export class ApiService<T = IObject> implements IService<T> {
     let articleLabel = Utils.labelArtDef(genre, label);
     let articleUndefLabel = Utils.labelArtUndef(genre);
 
+    const { labelList, ...genericLabels } = this.genericEnLabels() || {};
+    if (labelList) {
+      return genericLabels;
+    }
     const lower = label.toLowerCase();
     let labels = this.isEnglish()
       ? {
