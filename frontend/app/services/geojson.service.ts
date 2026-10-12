@@ -6,6 +6,7 @@ import { MapService } from '@geonature_common/map/map.service';
 
 import { SitesService, SitesGroupService } from './api-geom.service';
 import { FormService } from './form.service';
+import { TranslateService } from '@ngx-translate/core';
 
 // This service will be used for sites and sites groups
 
@@ -53,8 +54,8 @@ const selectedSiteStyle = {
   zIndex: 30,
 };
 
-const NAME_LAYER_SITE: string = 'Sites';
-const NAME_LAYER_GRP_SITE: string = 'Groupe de sites';
+const NAME_LAYER_SITE: string = 'Monitoring.Map.SitesLayer';
+const NAME_LAYER_GRP_SITE: string = 'Monitoring.Map.SitesGroupLayer';
 
 export type DisplayMode = 'main' | 'info' | 'info_zoom';
 
@@ -78,7 +79,8 @@ export class GeoJSONService {
     private _sites_group_service: SitesGroupService,
     private _sites_service: SitesService,
     private _mapService: MapService,
-    private _formService: FormService
+    private _formService: FormService,
+    private _translate: TranslateService
   ) {}
 
   removeAllLayers() {
@@ -333,7 +335,8 @@ export class GeoJSONService {
    * @returns Un objet LayerModeConfig décrivant le comportement attendu
    */
 
-  private resolveMode(mode: DisplayMode, layerName: string): LayerModeConfig {
+  private resolveMode(mode: DisplayMode, layerKey: string): LayerModeConfig {
+    const layerName = this._translate.instant(layerKey);
     // Modes "info" :
     // - "info"      : Affichage dans le layer Control pas de zoom automatique
     // - "info_zoom" : Affichage dans le layer Control zoom forcé sur l'entité cliquée
