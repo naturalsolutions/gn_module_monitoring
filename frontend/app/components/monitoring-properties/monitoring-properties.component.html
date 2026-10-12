@@ -58,7 +58,7 @@
           <div [matTooltip]="ms.toString(media)">
             <a [href]="ms.href(media)" target="_blank">{{ media.title_fr }}</a>
             <i>
-              ({{ ms.typeMedia(media) }}<span *ngIf="media.author"> par {{ media.author }}</span
+              ({{ ms.typeMedia(media) }}<span *ngIf="media.author"> {{ 'Monitoring.Properties.ByAuthor' | translate: { author: media.author } }}</span
               >)
             </i>
           </div>
