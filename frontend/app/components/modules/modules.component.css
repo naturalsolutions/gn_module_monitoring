@@ -42,3 +42,16 @@ a {
 .isDisableBtn {
   opacity: 90%;
 }
+
+/* action pinned at the bottom, aligned from one card to the next */
+.module-card {
+  height: 100%;
+}
+.module-card .card-body {
+  display: flex;
+  flex-direction: column;
+}
+.module-card-action {
+  margin-top: auto;
+  align-self: center;
+}

@@ -19,7 +19,8 @@
             "Download": "Download",
             "SyntheseUpdated": "The synthesis has been updated for the module {{ module }}",
             "SyntheseUpdateError": "Error while updating the synthesis for the module {{ module }} - {{ error }}",
-            "CodeTooltip": "code: {{ code }}"
+            "CodeTooltip": "code: {{ code }}",
+            "ViewSites": "View monitoring sites"
         },
         "DeletingPopup": {
             "Warning": "Warning",
